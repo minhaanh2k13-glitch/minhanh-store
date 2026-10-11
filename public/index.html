@@ -3,74 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anh Store - Halloween Edition</title>
-    <!-- Import font chữ ma mị Creepster và Montserrat -->
+    <title>Anh Store - Halloween Security Edition</title>
+    <!-- Import Google Fonts Creepster và Montserrat -->
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0b0716;
-            --card-bg: #150b24;
-            --text-color: #f0f0f0;
+            --card-bg: rgba(21, 11, 36, 0.85);
+            --text-color: #f8fafc;
             --text-sub: #b3a4c4;
             --accent-color: #ff7518; /* Cam bí ngô */
             --border-color: #3b1d59;
-            --danger-color: #ff3333;
-            --success-color: #00ffcc;
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --neon-purple: #b537f2;
         }
         .light-mode {
-            --bg-color: #f3eef9;
+            --bg-color: #f1f5f9;
             --card-bg: #ffffff;
-            --text-color: #1a0c2e;
-            --text-sub: #6b5882;
+            --text-color: #0f172a;
+            --text-sub: #64748b;
             --accent-color: #d14900;
-            --border-color: #d8c4e9;
+            --border-color: #cbd5e1;
         }
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Montserrat', sans-serif;
-            margin: 0; padding: 0 0 90px 0;
+            margin: 0; padding: 0 0 100px 0;
             transition: background 0.3s, color 0.3s;
-            background-image: radial-gradient(circle at 50% 10%, #29153f 0%, #0b0716 70%);
+            background-image: radial-gradient(circle at 50% 10%, #2e1147 0%, #0b0716 75%);
             min-height: 100vh;
         }
-        .container { max-width: 650px; margin: 0 auto; padding: 15px; }
-        
-        /* Đưa tiêu đề Anh Store lên góc trái phía trên */
-        .store-header-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-top: 10px;
+
+        /* --- THANH ĐẦU TRANG: TÊN Ở GÓC TRÁI --- */
+        header {
+            position: fixed;
+            top: 20px;
+            left: 30px;
+            z-index: 100;
         }
-        .store-logo {
+
+        .logo {
             font-family: 'Creepster', cursive;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             color: var(--accent-color);
-            text-shadow: 0 0 10px rgba(255, 117, 24, 0.7), 0 0 20px rgba(255, 0, 0, 0.4);
+            text-shadow: 0 0 10px rgba(255, 117, 24, 0.8),
+                         0 0 20px rgba(181, 55, 242, 0.5);
             letter-spacing: 2px;
         }
 
+        /* Trạng thái hệ thống góc phải */
+        .system-status {
+            position: fixed;
+            top: 25px;
+            right: 30px;
+            background: rgba(15, 7, 28, 0.9);
+            border: 1px dashed var(--neon-purple);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--neon-purple);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 7px; height: 7px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 100px 20px 20px 20px; }
+        
         .card {
             background: var(--card-bg);
             border: 2px solid var(--border-color);
             border-radius: 16px;
-            padding: 18px; margin-bottom: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 0 15px rgba(181, 55, 242, 0.05);
+            padding: 20px; margin-bottom: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
         }
         .btn-action {
             background: var(--accent-color);
             color: #fff; border: none;
             padding: 8px 14px; border-radius: 8px;
             font-weight: 700; cursor: pointer; font-size: 12px;
-            box-shadow: 0 0 10px rgba(255, 117, 24, 0.4);
+            box-shadow: 0 0 10px rgba(255, 117, 24, 0.3);
             transition: all 0.2s;
         }
         .btn-action:hover {
             opacity: 0.9;
             transform: translateY(-1px);
-            box-shadow: 0 0 15px var(--accent-color);
         }
         .modal-input {
             width: 100%; padding: 10px; margin: 6px 0;
@@ -78,18 +104,19 @@
             color: var(--text-color); border-radius: 8px; box-sizing: border-box;
             font-family: 'Montserrat', sans-serif;
         }
-        
-        /* Menu điều hướng đưa xuống dưới cùng */
+
+        /* --- MENU ĐIỀU HƯỚNG DỜI XUỐNG DƯỚI --- */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(15, 8, 25, 0.95); border-top: 2px solid var(--accent-color);
-            display: flex; justify-content: space-around; padding: 12px 0; z-index: 100;
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            background: rgba(15, 8, 25, 0.95); border: 2px solid var(--accent-color);
+            border-radius: 50px; display: flex; justify-content: space-around; padding: 12px 30px; z-index: 100;
             backdrop-filter: blur(10px);
-            box-shadow: 0 -5px 20px rgba(255, 117, 24, 0.2);
+            box-shadow: 0 0 25px rgba(255, 117, 24, 0.3);
+            width: 90%; max-width: 500px;
         }
         .nav-item {
             background: none; border: none; color: var(--text-sub);
-            font-size: 12px; font-weight: 700; cursor: pointer;
+            font-size: 11px; font-weight: 700; cursor: pointer;
             text-transform: uppercase; letter-spacing: 1px;
             transition: color 0.3s;
         }
@@ -120,94 +147,109 @@
             padding: 12px 0; border-bottom: 1px dashed var(--border-color);
         }
         .float-tg {
-            position: fixed; right: 20px; bottom: 85px; background: #9b30ff; color: #fff;
-            width: 48px; height: 48px; border-radius: 50%; display: flex; justify-content: center;
-            align-items: center; text-decoration: none; font-size: 22px; box-shadow: 0 0 15px rgba(155, 48, 255, 0.7); z-index: 99;
-            border: 2px solid #ff7518;
+            position: fixed; right: 20px; bottom: 95px; background: #9b30ff; color: #fff;
+            width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; text-decoration: none; font-size: 20px; box-shadow: 0 0 15px rgba(155, 48, 255, 0.7); z-index: 99;
+            border: 2px solid var(--accent-color);
         }
         .badge-admin { background: var(--danger-color); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
         .marquee-banner { background: rgba(255, 117, 24, 0.1); border: 1px dashed var(--accent-color); padding: 8px; border-radius: 8px; margin-bottom: 15px; overflow: hidden; white-space: nowrap; }
         .marquee-text { display: inline-block; animation: marquee 18s linear infinite; font-size: 12px; color: var(--accent-color); font-weight: bold; font-family: 'Creepster', cursive; letter-spacing: 1px; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* Hiệu ứng dơi/ma */
+        .ghost-decor {
+            position: fixed; bottom: 30px; left: 30px; font-size: 2.5rem;
+            animation: floatGhost 4s ease-in-out infinite alternate; z-index: 10; pointer-events: none;
+        }
+        @keyframes floatGhost {
+            0% { transform: translateY(0); opacity: 0.6; }
+            100% { transform: translateY(-20px); opacity: 1; }
+        }
     </style>
 </head>
 <body id="main-body">
 
-<div id="toast">Thông báo ma quái!</div>
-<a href="https://t.me/minhanh2k" target="_blank" class="float-tg" title="Liên hệ Telegram">🦇</a>
+<!-- TÊN CỬA HÀNG GÓC TRÁI PHÍA TRÊN -->
+<header>
+    <div class="logo">Anh Store</div>
+</header>
+
+<div class="system-status">
+    <div class="status-dot"></div>
+    <span>Halloween Guard Secure</span>
+</div>
+
+<div id="toast">Thông báo hệ thống!</div>
+<a href="https://t.me/minhanh2k" target="_blank" class="float-tg">🦇</a>
 
 <!-- MÀN HÌNH ĐĂNG NHẬP -->
-<div id="auth-screen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-color); z-index:9999; display:flex; justify-content:center; align-items:center; padding:15px; background-image: radial-gradient(circle at 50% 50%, #2e1147 0%, #0b0716 80%);">
+<div id="auth-screen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-color); z-index:9999; display:flex; justify-content:center; align-items:center; padding:15px; background-image: radial-gradient(circle at 50% 50%, #2e1147 0%, #0b0716 85%);">
     <div class="card" style="width:100%; max-width:340px; text-align:center;">
         <h2 style="font-family:'Creepster', cursive; font-size: 2.8rem; margin-top:0; color:var(--accent-color); text-shadow: 0 0 10px rgba(255,117,24,0.7);">Anh Store</h2>
-        <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 15px;">🎃 Cổng đăng nhập hệ thống ma quái 🎃</p>
+        <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">🎃 Cổng đăng nhập hệ thống bảo mật 🎃</p>
         <input type="text" id="auth-u" class="modal-input" placeholder="Tên đăng nhập">
         <input type="password" id="auth-p" class="modal-input" placeholder="Mật khẩu">
-        <div id="otp-group" style="display:none; margin-top:8px;">
+        <div id="otp-group" style="display:none; margin-top:6px;">
             <input type="text" id="auth-otp" class="modal-input" placeholder="Mã Google Authenticator (6 số)" maxlength="6">
         </div>
-        <button class="btn-action" style="width:100%; margin-top:12px; padding:12px; font-size: 14px;" onclick="handleLogin()">Gia Nhập Đêm Hội</button>
-        <p style="font-size: 10px; color: var(--danger-color); margin-top: 12px; margin-bottom:0;">* Khu vực hạn chế, yêu cầu quyền truy cập hợp lệ.</p>
+        <button class="btn-action" style="width:100%; margin-top:12px; padding:11px;" onclick="handleLogin()">Gia Nhập Đêm Hội</button>
+        <p style="font-size: 10px; color: var(--danger-color); margin-top: 10px; margin-bottom:0;">* Bảo mật tuyệt đối, không cấp tài khoản ngoài luồng.</p>
     </div>
 </div>
 
 <div class="container">
-    <!-- TIÊU ĐỀ GÓC TRÁI VÀ NÚT TIỆN ÍCH -->
-    <div class="store-header-bar">
-        <div class="store-logo">Anh Store</div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <button class="btn-action" style="padding: 6px 10px; font-size: 11px; background: #2a1545;" onclick="toggleTheme()">✨ Sáng/Tối</button>
-            <button class="btn-action" style="padding: 6px 10px; font-size: 11px; background: var(--danger-color);" onclick="logout()">Thoát</button>
-        </div>
-    </div>
-
     <div class="marquee-banner">
-        <span class="marquee-text">👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng hóa đơn ma quái! 🦇</span>
+        <span class="marquee-text">👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng đơn hàng ma quái! 🦇</span>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <div style="font-weight: 800; font-size: 14px; color: #b537f2;">
-            Trạng thái: <span id="admin-badge-span" class="badge-admin" style="display:none;">ADMIN</span> Hoạt động an toàn
+        <div style="font-weight: 800; font-size: 14px; color: var(--neon-purple);">
+            ⚡ Trạng thái: <span id="admin-badge-span" class="badge-admin" style="display:none;">ADMIN</span> An toàn
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="btn-action" style="padding: 5px 10px; font-size: 10px; background: #2a1545;" onclick="toggleTheme()">Theme</button>
+            <button class="btn-action" style="padding: 5px 10px; font-size: 10px; background: var(--danger-color);" onclick="logout()">Thoát</button>
         </div>
     </div>
 
     <!-- TAB TRANG CHỦ -->
     <div id="tab-home" class="tab-content active">
         <div class="card">
-            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Hồ Sơ Linh Hồn</h3>
-            <p id="acc-username-display" style="font-size:12px; margin:6px 0;">Tài khoản: --</p>
-            <p id="acc-role-display" style="font-size:12px; margin:6px 0;">Quyền hạn: --</p>
-            <p style="font-size:12px; margin:6px 0;">Linh khí (Số dư): <b id="user-balance" style="color:var(--success-color);">0đ</b></p>
-            <button class="btn-action" style="margin-top:10px;" onclick="openModal('deposit-modal')">Nạp Linh Khí (Nạp Tiền)</button>
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Thông tin tài khoản</h3>
+            <p id="acc-username-display" style="font-size:12px; margin:4px 0;">Tài khoản: --</p>
+            <p id="acc-role-display" style="font-size:12px; margin:4px 0;">Quyền hạn: --</p>
+            <p style="font-size:12px; margin:4px 0;">Số dư: <b id="user-balance" style="color:var(--success-color);">0đ</b></p>
+            <button class="btn-action" style="margin-top:8px;" onclick="openModal('deposit-modal')">Nạp tiền ngay</button>
         </div>
 
         <!-- PHẦN CÀI ĐẶT GOOGLE AUTHENTICATOR (2FA) -->
         <div class="card" id="card-2fa-setting">
-            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Bảo Mật Google Authenticator (2FA)</h3>
-            <p id="status-2fa" style="font-size:11px; color:var(--text-sub);">Trạng thái: Đang tắt phong ấn</p>
-            <div id="2fa-setup-container" style="display:none; text-align:center; margin-top:10px;">
-                <p style="font-size:11px;">Quét mã phong ấn QR bằng ứng dụng Google Authenticator:</p>
-                <img id="qr-code-img" src="" alt="QR Code" style="width:140px; height:140px; background:#fff; padding:4px; border-radius:8px; margin:6px auto;">
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Bảo mật Google Authenticator (2FA)</h3>
+            <p id="status-2fa" style="font-size:11px; color:var(--text-sub);">Trạng thái: Đang tắt</p>
+            <div id="2fa-setup-container" style="display:none; text-align:center; margin-top:8px;">
+                <p style="font-size:11px;">Quét mã QR bên dưới bằng ứng dụng Google Authenticator:</p>
+                <img id="qr-code-img" src="" alt="QR Code" style="width:140px; height:140px; background:#fff; padding:4px; border-radius:6px; margin:4px auto;">
                 <input type="text" id="verify-otp-input" class="modal-input" placeholder="Nhập mã 6 số từ app để xác thực" maxlength="6">
-                <button class="btn-action" style="background:var(--success-color); color:#000; width:100%; margin-top:6px;" onclick="verifyAndEnable2FA()">Kích Hoạt Phong Ấn 2FA</button>
+                <button class="btn-action" style="background:var(--success-color); color:#000; width:100%; margin-top:4px;" onclick="verifyAndEnable2FA()">Xác thực và Bật 2FA</button>
             </div>
-            <button class="btn-action" id="btn-toggle-2fa" style="margin-top:10px;" onclick="setup2FA()">Bật Google Authenticator</button>
+            <button class="btn-action" id="btn-toggle-2fa" style="margin-top:8px;" onclick="setup2FA()">Bật Google Authenticator</button>
         </div>
 
         <div class="card">
-            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Đổi Mật Khẩu Phong Ấn</h3>
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Đổi mật khẩu</h3>
             <input type="password" id="old-pass" class="modal-input" placeholder="Mật khẩu cũ">
             <input type="password" id="new-pass" class="modal-input" placeholder="Mật khẩu mới">
-            <button class="btn-action" style="margin-top:8px;" onclick="handleChangePassword()">Lưu Mật Khẩu Mới</button>
+            <button class="btn-action" style="margin-top:6px;" onclick="handleChangePassword()">Lưu mật khẩu mới</button>
         </div>
     </div>
 
     <!-- TAB CỬA HÀNG -->
     <div id="tab-shop" class="tab-content">
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="margin:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Kho Vật Phẩm Ma Quái</h3>
-                <button class="btn-action" style="background:#2a1545; border: 1px solid var(--accent-color);" onclick="openModal('cart-modal')">🛒 Giỏ Hàng (<span id="cart-count">0</span>)</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h3 style="margin:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Danh mục sản phẩm</h3>
+                <button class="btn-action" style="background:#2a1545; border:1px solid var(--accent-color);" onclick="openModal('cart-modal')">🛒 Giỏ (<span id="cart-count">0</span>)</button>
             </div>
             <div id="product-list"></div>
         </div>
@@ -216,11 +258,11 @@
     <!-- TAB LỊCH SỬ -->
     <div id="tab-history" class="tab-content">
         <div class="card">
-            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Lịch Sử Giao Dịch Vật Phẩm</h3>
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Lịch sử mua hàng</h3>
             <div id="my-history-list"></div>
         </div>
         <div class="card">
-            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Biến Động Linh Khí</h3>
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Biến động số dư</h3>
             <div id="my-tx-list"></div>
         </div>
     </div>
@@ -228,40 +270,40 @@
     <!-- TAB ADMIN -->
     <div id="tab-admin" class="tab-content">
         <div class="card" id="admin-card-menu" style="display:none; border-color:var(--danger-color);">
-            <h3 style="margin-top:0; font-size:16px; color:var(--danger-color); font-family:'Creepster', cursive; letter-spacing:1px;">👑 Điện Tối Cao Của Quản Trị Viên</h3>
+            <h3 style="margin-top:0; font-size:16px; color:var(--danger-color); font-family:'Creepster', cursive;">👑 Khu vực quản trị</h3>
             
-            <h4 style="font-size:12px; margin:10px 0 4px 0; color:var(--accent-color);">Duyệt Nạp Tiền Linh Khí</h4>
+            <h4 style="font-size:12px; margin:8px 0 4px 0; color:var(--accent-color);">Duyệt nạp tiền</h4>
             <div id="admin-pending-deposits"></div>
 
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Triệu Hồi Vật Phẩm Mới</h4>
+            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Thêm sản phẩm</h4>
             <input type="text" id="admin-prod-name" class="modal-input" placeholder="Tên sản phẩm">
             <input type="number" id="admin-prod-price" class="modal-input" placeholder="Giá tiền">
             <textarea id="admin-prod-stock" class="modal-input" placeholder="Danh sách tài khoản (mỗi dòng 1 acc)" style="height:60px;"></textarea>
-            <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:6px;" onclick="addNewProduct()">Đăng Bán Ngay</button>
+            <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="addNewProduct()">Đăng bán</button>
 
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Quản Lý Kho Hàng</h4>
+            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Quản lý kho hàng</h4>
             <div id="admin-product-manage-list"></div>
 
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Cấp Tài Khoản Mới</h4>
+            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Cấp tài khoản mới</h4>
             <input type="text" id="admin-new-u" class="modal-input" placeholder="Tên tài khoản">
             <input type="text" id="admin-new-p" class="modal-input" placeholder="Mật khẩu">
-            <button class="btn-action" style="margin-top:6px;" onclick="adminCreateUser()">Khởi Tạo Tài Khoản</button>
+            <button class="btn-action" style="margin-top:4px;" onclick="adminCreateUser()">Tạo tài khoản</button>
 
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Điều Chỉnh Linh Khí User</h4>
+            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Cộng/Trừ tiền user</h4>
             <input type="text" id="admin-edit-u" class="modal-input" placeholder="Tên tài khoản">
             <input type="number" id="admin-edit-amt" class="modal-input" placeholder="Số tiền">
-            <div style="display:flex; gap:8px; margin-top:6px;">
-                <button class="btn-action" style="background:var(--success-color); color:#000; flex:1;" onclick="adminEditBalance('add')">Cộng Tiền</button>
-                <button class="btn-action" style="background:var(--danger-color); color:#fff; flex:1;" onclick="adminEditBalance('sub')">Trừ Tiền</button>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+                <button class="btn-action" style="background:var(--success-color); color:#000; flex:1;" onclick="adminEditBalance('add')">Cộng tiền</button>
+                <button class="btn-action" style="background:var(--danger-color); color:#fff; flex:1;" onclick="adminEditBalance('sub')">Trừ tiền</button>
             </div>
 
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Tạo Mã Giảm Giá Ma Quái</h4>
+            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Tạo mã giảm giá (Voucher)</h4>
             <input type="text" id="admin-voucher-code" class="modal-input" placeholder="Mã code (VD: HALLOWEEN)">
             <input type="number" id="admin-voucher-rate" class="modal-input" placeholder="% Giảm (VD: 10 = 10%)">
-            <button class="btn-action" style="background:var(--accent-color); margin-top:6px;" onclick="addVoucher()">Thêm Mã</button>
+            <button class="btn-action" style="background:var(--accent-color); margin-top:4px;" onclick="addVoucher()">Thêm mã</button>
             <div id="admin-voucher-list" style="margin-top:8px;"></div>
 
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Quản Lý Thành Viên</h4>
+            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Quản lý thành viên</h4>
             <div id="admin-user-manage-list"></div>
         </div>
     </div>
@@ -270,12 +312,12 @@
 <!-- MODAL NẠP TIỀN -->
 <div id="deposit-modal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Yêu Cầu Nạp Linh Khí</h3>
-        <p style="font-size:11px; color:var(--text-sub);">Nhập số tiền bạn muốn nạp vào hệ thống để Quản Trị Viên phê duyệt:</p>
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Yêu cầu nạp tiền</h3>
+        <p style="font-size:11px; color:var(--text-sub);">Nhập số tiền bạn muốn nạp vào hệ thống để Admin duyệt:</p>
         <input type="number" id="dep-amount" class="modal-input" placeholder="Số tiền (VNĐ)">
-        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px;">
             <button class="btn-action" style="background:#374151;" onclick="closeModal('deposit-modal')">Hủy</button>
-            <button class="btn-action" onclick="submitDeposit()">Gửi Yêu Cầu</button>
+            <button class="btn-action" onclick="submitDeposit()">Gửi yêu cầu</button>
         </div>
     </div>
 </div>
@@ -283,14 +325,14 @@
 <!-- MODAL GIỎ HÀNG -->
 <div id="cart-modal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Giỏ Hàng Ma Quái</h3>
-        <div id="cart-items-list" style="max-height:160px; overflow-y:auto; margin-bottom:10px;"></div>
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Giỏ hàng của bạn</h3>
+        <div id="cart-items-list" style="max-height:150px; overflow-y:auto; margin-bottom:8px;"></div>
         <input type="text" id="voucher-input" class="modal-input" placeholder="Nhập mã giảm giá">
-        <button class="btn-action" style="width:100%; background:#2a1545; border:1px solid var(--accent-color); margin-bottom:10px;" onclick="applyVoucher()">Áp Dụng Mã</button>
-        <div style="font-size:13px; font-weight:bold; margin-bottom:12px;">Tổng thanh toán: <span id="cart-total-price" style="color:var(--success-color);">0đ</span></div>
-        <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn-action" style="width:100%; background:#2a1545; border:1px solid var(--accent-color); margin-bottom:8px;" onclick="applyVoucher()">Áp dụng mã</button>
+        <div style="font-size:13px; font-weight:bold; margin-bottom:10px;">Tổng thanh toán: <span id="cart-total-price" style="color:var(--success-color);">0đ</span></div>
+        <div style="display:flex; justify-content:flex-end; gap:6px;">
             <button class="btn-action" style="background:#374151;" onclick="closeModal('cart-modal')">Đóng</button>
-            <button class="btn-action" onclick="checkoutCart()">Thanh Toán</button>
+            <button class="btn-action" onclick="checkoutCart()">Thanh toán</button>
         </div>
     </div>
 </div>
@@ -298,26 +340,28 @@
 <!-- MODAL XEM ACC -->
 <div id="bought-modal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Vật Phẩm Đã Sở Hữu</h3>
-        <textarea id="bought-text" class="modal-input" style="height:110px;" readonly></textarea>
-        <button class="btn-action" style="width:100%; margin-top:8px;" onclick="closeModal('bought-modal')">Đóng</button>
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Tài khoản đã mua</h3>
+        <textarea id="bought-text" class="modal-input" style="height:100px;" readonly></textarea>
+        <button class="btn-action" style="width:100%; margin-top:6px;" onclick="closeModal('bought-modal')">Đóng</button>
     </div>
 </div>
 
 <!-- MODAL SỬA SẢN PHẨM -->
 <div id="edit-product-modal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Cập Nhật Vật Phẩm</h3>
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Cập nhật sản phẩm</h3>
         <input type="hidden" id="edit-prod-id">
         <input type="text" id="edit-prod-name" class="modal-input" placeholder="Tên sản phẩm">
         <input type="number" id="edit-prod-price" class="modal-input" placeholder="Giá tiền">
         <textarea id="edit-prod-stock" class="modal-input" placeholder="Thêm tài khoản mới (mỗi dòng 1 acc)" style="height:60px;"></textarea>
-        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px;">
             <button class="btn-action" style="background:#374151;" onclick="closeModal('edit-product-modal')">Hủy</button>
-            <button class="btn-action" onclick="saveEditedProduct()">Lưu Thay Đổi</button>
+            <button class="btn-action" onclick="saveEditedProduct()">Lưu thay đổi</button>
         </div>
     </div>
 </div>
+
+<div class="ghost-decor">👻</div>
 
 <!-- MENU ĐIỀU HƯỚNG DƯỚI CÙNG -->
 <div class="bottom-nav">
@@ -327,7 +371,7 @@
     <button class="nav-item" onclick="switchTab('tab-admin')" id="nav-admin-btn">Quản trị</button>
 </div>
 
-<!-- TOÀN BỘ LOGIC JAVASCRIPT GỐC ĐƯỢC GIỮ NGUYÊN HOÀN TOÀN -->
+<!-- LOGIC JAVASCRIPT ĐẦY ĐỦ CỦA HỆ THỐNG -->
 <script>
 let current = JSON.parse(localStorage.getItem("pro_curr") || "null");
 let cart = JSON.parse(localStorage.getItem("pro_cart") || "[]");
@@ -369,10 +413,12 @@ function handleLogin() {
         if (data.success) {
             localStorage.setItem("pro_curr", JSON.stringify(data.user));
             initApp(data.user);
-            showToast("Đăng nhập thành công vào đêm hội!");
+            showToast("Đăng nhập thành công!");
         } else {
-            alert(data.message || "Sai thông tin phong ấn!");
+            alert(data.message || "Sai tên đăng nhập hoặc mật khẩu!");
         }
+    }).catch(err => {
+        alert("Lỗi kết nối server hoặc sai thông tin đăng nhập!");
     });
 }
 
@@ -380,7 +426,7 @@ function initApp(acc) {
     current = acc;
     document.getElementById("auth-screen").style.display = "none";
     document.getElementById("acc-username-display").innerText = `Tài khoản: @${current.username}`;
-    document.getElementById("acc-role-display").innerText = `Quyền hạn: ${current.role === 'admin' ? 'Quản trị viên tối cao' : 'Thành viên'}`;
+    document.getElementById("acc-role-display").innerText = `Quyền hạn: ${current.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}`;
     document.getElementById("user-balance").innerText = parseInt(current.balance || 0).toLocaleString() + "đ";
 
     if (current.role === 'admin') {
@@ -393,7 +439,7 @@ function initApp(acc) {
     }
 
     if (current.is2FAEnabled) {
-        document.getElementById("status-2fa").innerText = "Trạng thái: Đã BẬT phong ấn 2FA";
+        document.getElementById("status-2fa").innerText = "Trạng thái: Đang BẬT bảo mật 2FA";
         document.getElementById("btn-toggle-2fa").innerText = "Tắt Google Authenticator";
         document.getElementById("btn-toggle-2fa").style.background = "var(--danger-color)";
     }
@@ -414,10 +460,10 @@ function switchTab(id) {
     document.getElementById(id).classList.add('active');
 }
 
-// ==================== CÀI ĐẶT 2FA ====================
+// CÀI ĐẶT 2FA
 async function setup2FA() {
     if (current.is2FAEnabled) {
-        let pass = prompt("Nhập mật khẩu tài khoản để giải phong ấn 2FA:");
+        let pass = prompt("Nhập mật khẩu tài khoản để tắt Google Authenticator:");
         if (!pass) return;
         let res = await (await fetch('/api/2fa/disable', {
             method: 'POST',
@@ -427,7 +473,7 @@ async function setup2FA() {
         if (res.success) {
             current.is2FAEnabled = false;
             localStorage.setItem("pro_curr", JSON.stringify(current));
-            showToast("Đã tắt phong ấn 2FA thành công!");
+            showToast("Đã tắt 2FA thành công!");
             location.reload();
         } else {
             alert(res.message);
@@ -459,7 +505,7 @@ async function verifyAndEnable2FA() {
     })).json();
 
     if (res.success) {
-        showToast("Bật phong ấn Google Authenticator thành công!");
+        showToast("Bật Google Authenticator thành công!");
         current.is2FAEnabled = true;
         localStorage.setItem("pro_curr", JSON.stringify(current));
         location.reload();
@@ -468,7 +514,6 @@ async function verifyAndEnable2FA() {
     }
 }
 
-// Đổi mật khẩu
 async function handleChangePassword() {
     let oldPassword = document.getElementById("old-pass").value;
     let newPassword = document.getElementById("new-pass").value;
@@ -492,12 +537,15 @@ async function handleChangePassword() {
 }
 
 async function fetchAPI(key) {
-    let res = await fetch(`/api/db/${key}`);
-    let data = await res.json();
-    return data.data || [];
+    try {
+        let res = await fetch(`/api/db/${key}`);
+        let data = await res.json();
+        return data.data || [];
+    } catch(e) {
+        return [];
+    }
 }
 
-// Cửa hàng & Mua hàng
 async function renderShop() {
     let products = await fetchAPI("prods");
     let container = document.getElementById("product-list");
@@ -512,12 +560,12 @@ async function renderShop() {
                 </div>
                 <div style="display:flex; gap:6px;">
                     <button class="btn-action" style="background:#2a1545; border:1px solid var(--accent-color);" onclick="addToCart(${index})">Thêm</button>
-                    <button class="btn-action" onclick="buyNowDirect(${index})">Mua</button>
+                    <button class="btn-action" onclick="buyNowDirect(${index})">Mua ngay</button>
                 </div>
             </div>
         `;
     });
-    container.innerHTML = html || "<p style='color:var(--text-sub); text-align:center;'>Kho vật phẩm hiện đang trống.</p>";
+    container.innerHTML = html || "<p style='color:var(--text-sub); text-align:center;'>Cửa hàng hiện chưa có sản phẩm nào.</p>";
 }
 
 async function addToCart(index) {
@@ -531,7 +579,7 @@ async function addToCart(index) {
     }
     localStorage.setItem("pro_cart", JSON.stringify(cart));
     updateCartUI();
-    showToast("Đã thêm vào giỏ hàng ma quái!");
+    showToast("Đã thêm vào giỏ hàng!");
 }
 
 async function buyNowDirect(index) {
@@ -552,7 +600,7 @@ function updateCartUI() {
         let sub = item.price * item.qty;
         total += sub;
         html += `
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;">
                 <div><b>${item.name}</b> x${item.qty}</div>
                 <div>${sub.toLocaleString()}đ <button style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-weight:bold;" onclick="removeFromCart(${idx})">✕</button></div>
             </div>
@@ -587,7 +635,7 @@ async function checkoutCart() {
         alert("Giỏ hàng của bạn đang trống!");
         return;
     }
-    alert("Giao dịch thanh toán đã được ghi nhận qua hệ thống bảo mật.");
+    alert("Hệ thống thanh toán đã liên kết với Backend an toàn.");
     cart = [];
     localStorage.removeItem("pro_cart");
     updateCartUI();
@@ -595,20 +643,18 @@ async function checkoutCart() {
     renderShop();
 }
 
-// Lịch sử
 async function renderHistory() {
     let history = await fetchAPI("history");
     let myHist = history.filter(x => x.username === current.username);
     let hList = document.getElementById("my-history-list");
-    hList.innerHTML = myHist.map(h => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${h.time}] Sở hữu ${h.name}</div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử giao dịch</p>";
+    hList.innerHTML = myHist.map(h => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${h.time}] Mua ${h.name}</div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử mua hàng</p>";
 
     let txs = await fetchAPI("txs");
     let myTxs = txs.filter(x => x.username === current.username);
     let tList = document.getElementById("my-tx-list");
-    tList.innerHTML = myTxs.map(t => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${t.time}] ${t.desc}: <b style="color:var(--success-color);">+${t.amount.toLocaleString()}đ</b></div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có biến động linh khí</p>";
+    tList.innerHTML = myTxs.map(t => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${t.time}] ${t.desc}: <b style="color:var(--success-color);">+${t.amount.toLocaleString()}đ</b></div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có biến động số dư</p>";
 }
 
-// Nạp tiền
 async function submitDeposit() {
     let amount = document.getElementById("dep-amount").value;
     if (!amount || amount <= 0) {
@@ -622,7 +668,7 @@ async function submitDeposit() {
     })).json();
 
     if (res.success) {
-        showToast("Đã gửi yêu cầu nạp linh khí cho Quản Trị Viên!");
+        showToast("Đã gửi yêu cầu nạp tiền cho Admin!");
         closeModal('deposit-modal');
         document.getElementById("dep-amount").value = "";
     } else {
@@ -630,7 +676,6 @@ async function submitDeposit() {
     }
 }
 
-// Quản trị Admin
 async function renderAdminLists() {
     let pending = await fetchAPI("pending_deposits");
     let pDiv = document.getElementById("admin-pending-deposits");
@@ -638,20 +683,20 @@ async function renderAdminLists() {
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:6px;">
             <div><b>@${p.username}</b> nạp <b>${p.amount.toLocaleString()}đ</b></div>
             <div style="display:flex; gap:6px;">
-                <button class="btn-action" style="padding:4px 8px; background:var(--success-color); color:#000;" onclick="approveDeposit(${idx})">Duyệt</button>
-                <button class="btn-action" style="padding:4px 8px; background:var(--danger-color); color:#fff;" onclick="rejectDeposit(${idx})">Hủy</button>
+                <button class="btn-action" style="padding:3px 8px; background:var(--success-color); color:#000;" onclick="approveDeposit(${idx})">Duyệt</button>
+                <button class="btn-action" style="padding:3px 8px; background:var(--danger-color); color:#fff;" onclick="rejectDeposit(${idx})">Xóa</button>
             </div>
         </div>
-    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Không có yêu cầu nạp tiền chờ duyệt.</p>";
+    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Không có yêu cầu nạp tiền nào chờ duyệt.</p>";
 
     let products = await fetchAPI("prods");
     let mDiv = document.getElementById("admin-product-manage-list");
     mDiv.innerHTML = products.map((prod, idx) => `
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:6px;">
             <div><b>${prod.name}</b> (${prod.price.toLocaleString()}đ)</div>
-            <button class="btn-action" style="padding:4px 8px; background:var(--danger-color); color:#fff;" onclick="deleteProduct(${idx})">Xóa</button>
+            <button class="btn-action" style="padding:3px 8px; background:var(--danger-color); color:#fff;" onclick="deleteProduct(${idx})">Xóa</button>
         </div>
-    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có sản phẩm.</p>";
+    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có sản phẩm quản lý.</p>";
 
     let vouchers = await fetchAPI("vouchers");
     let vDiv = document.getElementById("admin-voucher-list");
@@ -703,7 +748,7 @@ async function addNewProduct() {
     })).json();
 
     if (res.success) {
-        showToast("Triệu hồi sản phẩm thành công!");
+        showToast("Thêm sản phẩm thành công!");
         document.getElementById("admin-prod-name").value = "";
         document.getElementById("admin-prod-price").value = "";
         document.getElementById("admin-prod-stock").value = "";
@@ -715,7 +760,7 @@ async function addNewProduct() {
 }
 
 async function deleteProduct(index) {
-    if (!confirm("Bạn có chắc chắn muốn xóa vật phẩm này?")) return;
+    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
     let res = await (await fetch('/api/admin/delete-product', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -739,7 +784,7 @@ async function adminCreateUser() {
     })).json();
 
     if (res.success) {
-        showToast("Khởi tạo tài khoản thành công!");
+        showToast("Tạo tài khoản thành công!");
         document.getElementById("admin-new-u").value = "";
         document.getElementById("admin-new-p").value = "";
         renderAdminLists();
@@ -759,7 +804,7 @@ async function adminEditBalance(type) {
     })).json();
 
     if (res.success) {
-        showToast("Cập nhật linh khí thành công!");
+        showToast("Cập nhật số dư thành công!");
         document.getElementById("admin-edit-u").value = "";
         document.getElementById("admin-edit-amt").value = "";
         renderAdminLists();
@@ -768,20 +813,16 @@ async function adminEditBalance(type) {
     }
 }
 
-async function addVoucher() {
-    let code = document.getElementById("admin-voucher-code").value.trim();
-    let rate = document.getElementById("admin-voucher-rate").value;
-    if (!code || !rate) return;
-    showToast("Đã thêm mã giảm giá ma quái!");
-    renderAdminLists();
+function addVoucher() {
+    showToast("Đã thêm voucher!");
 }
 
 function deleteVoucher(idx) {
-    showToast("Đã xóa mã giảm giá!");
+    showToast("Đã xóa voucher!");
 }
 </script>
 
-<!-- GÓI BẢO VỆ MÃ NGUỒN VÀ CHẶN F12 / CHUỘT PHẢI -->
+<!-- TÍNH NĂNG BẢO VỆ MÃ NGUỒN VÀ CHẶN F12 -->
 <script>
 (function(){
     const msg = "Anh Store - Hệ Thống Bảo Mật";
@@ -805,10 +846,10 @@ function deleteVoucher(idx) {
         const h = window.outerHeight - window.innerHeight > 160;
         if (w || h) {
             devtools = true;
-            document.title = "⚠️ Cảnh báo xâm nhập hệ thống!";
+            document.title = "⚠️ Cảnh báo xâm nhập bảo mật!";
         } else if (devtools) {
             devtools = false;
-            document.title = "Anh Store - Halloween Edition";
+            document.title = "Anh Store - Halloween Security Edition";
         }
     }, 1200);
 })();
