@@ -3,13 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MinhAnh Store - Cửa Hàng Số</title>
+    <title>MinhAnh Store - Cổng Quản Trị & Cửa Hàng Số</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: #0f172a; color: #f8fafc; padding: 20px; min-height: 100vh; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 600px; }
+        .container { width: 100%; max-width: 650px; }
         .banner { background: #1e293b; border: 1px dashed #38bdf8; padding: 12px; border-radius: 8px; text-align: center; color: #38bdf8; font-size: 14px; margin-bottom: 20px; font-weight: 500; }
+        
+        /* Navbar Tabs */
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid #334155; overflow-x: auto; }
+        .tab-btn { flex: 1; padding: 10px; background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 13px; border-radius: 6px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-align: center; }
+        .tab-btn.active { background: #0284c7; color: white; }
+
         .card { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .header-title h3 { color: #f8fafc; font-size: 18px; }
@@ -24,7 +30,7 @@
         .btn-success { background: #10b981; }
         .btn-success:hover { background: #059669; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .product-item { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .product-item, .history-item { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
         .hidden { display: none; }
         .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; background: #334155; color: #38bdf8; }
     </style>
@@ -37,91 +43,126 @@
     </div>
 
     <div class="header-title">
-        <h3>⚡ MinhAnh Store</h3>
+        <h3 style="color: #38bdf8;">⚡ MinhAnh Store</h3>
         <div>
-            <button onclick="toggleTheme()" style="background: #475569; padding: 6px 12px; font-size: 13px;">Theme</button>
-            <button id="logout-btn" onclick="logout()" class="btn-danger hidden" style="padding: 6px 12px; font-size: 13px; margin-left: 5px;">Thoát</button>
+            <button id="logout-btn" onclick="logout()" class="btn-danger hidden" style="padding: 6px 12px; font-size: 13px;">Thoát</button>
         </div>
     </div>
 
-    <!-- KHU VỰC ĐĂNG NHẬP -->
-    <div id="login-card" class="card">
-        <h3 style="margin-bottom: 15px; color: #38bdf8;">Đăng Nhập Hệ Thống</h3>
-        <div class="form-group">
-            <label>Tên đăng nhập</label>
-            <input type="text" id="username" placeholder="Nhập tài khoản...">
-        </div>
-        <div class="form-group">
-            <label>Mật khẩu</label>
-            <input type="password" id="password" placeholder="Nhập mật khẩu...">
-        </div>
-        <div class="form-group hidden" id="otp-group">
-            <label>Mã Google Authenticator (6 số)</label>
-            <input type="text" id="otpToken" placeholder="Nhập mã OTP từ app...">
-        </div>
-        <button onclick="login()" style="width: 100%;">Đăng Nhập</button>
+    <!-- THANH MENU TAB CHUYỂN HƯỚNG -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('shop')">🛒 Cửa Hàng</button>
+        <button class="tab-btn" onclick="switchTab('profile')">👤 Tài Khoản</button>
+        <button class="tab-btn" onclick="switchTab('purchased')">📦 Đã Mua</button>
+        <button class="tab-btn hidden" id="tab-admin-btn" onclick="switchTab('admin')">🛠️ Quản Trị</button>
     </div>
 
-    <!-- THÔNG TIN TÀI KHOẢN (Sau khi đăng nhập) -->
-    <div id="user-card" class="card hidden">
-        <h3 style="color: #38bdf8; margin-bottom: 12px;">Thông tin tài khoản</h3>
-        <p style="font-size: 14px; margin-bottom: 6px;">Tài khoản: <b id="disp-username" style="color: #f1f5f9;"></b></p>
-        <p style="font-size: 14px; margin-bottom: 6px;">Quyền hạn: <span id="disp-role" class="badge"></span></p>
-        <p style="font-size: 14px; margin-bottom: 12px;">Số dư: <b id="disp-balance" style="color: #4ade80;">0</b>đ</p>
-        <button class="btn-success" onclick="alert('Vui lòng liên hệ Admin để nạp thêm số dư quỹ!')">Nạp tiền ngay</button>
-    </div>
-
-    <!-- BẢO MẬT 2FA -->
-    <div id="security-card" class="card hidden">
-        <h3 style="color: #38bdf8; margin-bottom: 12px;">Bảo mật Google Authenticator (2FA)</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Trạng thái: <b id="fa-status" style="color: #f43f5e;">Đang tắt</b></p>
-        <button id="btn-setup-2fa" onclick="setup2FA()">Bật Google Authenticator</button>
-        
-        <div id="qr-box" class="hidden" style="margin-top: 15px; text-align: center;">
-            <p style="font-size: 13px; margin-bottom: 10px;">Quét mã QR bằng ứng dụng Google Authenticator:</p>
-            <img id="qr-img" src="" alt="QR 2FA" style="background: white; padding: 5px; border-radius: 6px; max-width: 180px;">
-            <div class="form-group" style="margin-top: 10px;">
-                <input type="text" id="verifyOtp" placeholder="Nhập mã 6 số xác nhận...">
-            </div>
-            <button class="btn-success" onclick="verify2FA()">Xác Nhận Kích Hoạt</button>
-        </div>
-    </div>
-
-    <!-- ĐỔI MẬT KHẨU -->
-    <div id="password-card" class="card hidden">
-        <h3 style="color: #38bdf8; margin-bottom: 12px;">Đổi mật khẩu</h3>
-        <div class="form-group">
-            <input type="password" id="oldPass" placeholder="Mật khẩu cũ">
-        </div>
-        <div class="form-group">
-            <input type="password" id="newPass" placeholder="Mật khẩu mới">
-        </div>
-        <button onclick="changePassword()">Lưu mật khẩu mới</button>
-    </div>
-
-    <!-- DANH SÁCH SẢN PHẨM / MUA HÀNG -->
-    <div class="card">
-        <h3 style="color: #38bdf8; margin-bottom: 12px;">Cửa Hàng Sản Phẩm Số</h3>
+    <!-- TAB 1: CỬA HÀNG -->
+    <div id="tab-shop" class="card">
+        <h3 style="color: #38bdf8; margin-bottom: 12px;">Sản Phẩm Số Nổi Bật</h3>
         <div id="product-list" class="grid">
-            <p>Đang tải sản phẩm...</p>
+            <p style="color: #94a3b8;">Đang tải sản phẩm...</p>
         </div>
     </div>
 
-    <!-- KHU VỰC ADMIN (Thêm sản phẩm) -->
-    <div id="admin-card" class="card hidden" style="border-color: #f59e0b;">
+    <!-- TAB 2: TÀI KHOẢN CỦA TÔI -->
+    <div id="tab-profile" class="card hidden">
+        <!-- Khu vực đăng nhập nếu chưa login -->
+        <div id="login-section">
+            <h3 style="margin-bottom: 15px; color: #38bdf8;">Đăng Nhập Hệ Thống</h3>
+            <div class="form-group">
+                <label>Tên đăng nhập</label>
+                <input type="text" id="username" placeholder="Nhập tài khoản...">
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <input type="password" id="password" placeholder="Nhập mật khẩu...">
+            </div>
+            <div class="form-group hidden" id="otp-group">
+                <label>Mã Google Authenticator (6 số)</label>
+                <input type="text" id="otpToken" placeholder="Nhập mã OTP từ app...">
+            </div>
+            <button onclick="login()" style="width: 100%;">Đăng Nhập</button>
+        </div>
+
+        <!-- Thông tin sau khi đăng nhập -->
+        <div id="user-info-section" class="hidden">
+            <h3 style="color: #38bdf8; margin-bottom: 12px;">Thông tin tài khoản</h3>
+            <p style="font-size: 14px; margin-bottom: 6px;">Tài khoản: <b id="disp-username" style="color: #f1f5f9;"></b></p>
+            <p style="font-size: 14px; margin-bottom: 6px;">Quyền hạn: <span id="disp-role" class="badge"></span></p>
+            <p style="font-size: 14px; margin-bottom: 12px;">Số dư: <b id="disp-balance" style="color: #4ade80;">0</b>đ</p>
+            <button class="btn-success" onclick="alert('Vui lòng liên hệ Admin để nạp số dư!')" style="margin-bottom: 20px;">Nạp tiền ngay</button>
+
+            <h3 style="color: #38bdf8; margin-bottom: 12px; font-size: 16px;">Bảo mật Google Authenticator (2FA)</h3>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Trạng thái: <b id="fa-status" style="color: #f43f5e;">Đang tắt</b></p>
+            <button id="btn-setup-2fa" onclick="setup2FA()">Bật Google Authenticator</button>
+            
+            <div id="qr-box" class="hidden" style="margin-top: 15px; text-align: center;">
+                <p style="font-size: 13px; margin-bottom: 10px;">Quét mã QR bằng ứng dụng Authenticator:</p>
+                <img id="qr-img" src="" alt="QR 2FA" style="background: white; padding: 5px; border-radius: 6px; max-width: 160px;">
+                <div class="form-group" style="margin-top: 10px;">
+                    <input type="text" id="verifyOtp" placeholder="Nhập mã 6 số xác nhận...">
+                </div>
+                <button class="btn-success" onclick="verify2FA()">Xác Nhận Kích Hoạt</button>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+
+            <h3 style="color: #38bdf8; margin-bottom: 12px; font-size: 16px;">Đổi mật khẩu</h3>
+            <div class="form-group"><input type="password" id="oldPass" placeholder="Mật khẩu cũ"></div>
+            <div class="form-group"><input type="password" id="newPass" placeholder="Mật khẩu mới"></div>
+            <button onclick="changePassword()">Lưu mật khẩu mới</button>
+        </div>
+    </div>
+
+    <!-- TAB 3: SẢN PHẨM ĐÃ MUA -->
+    <div id="tab-purchased" class="card hidden">
+        <h3 style="color: #38bdf8; margin-bottom: 12px;">Lịch Sử Giao Dịch & Sản Phẩm Đã Mua</h3>
+        <div id="history-list" class="grid">
+            <p style="color: #94a3b8;">Vui lòng đăng nhập để xem lịch sử.</p>
+        </div>
+    </div>
+
+    <!-- TAB 4: QUẢN TRỊ ADMIN -->
+    <div id="tab-admin" class="card hidden" style="border-color: #f59e0b;">
         <h3 style="color: #f59e0b; margin-bottom: 12px;">Quản Trị Viên (Thêm sản phẩm)</h3>
         <div class="form-group">
-            <input type="text" id="pName" placeholder="Tên sản phẩm...">
+            <input type="text" id="pName" placeholder="Tên sản phẩm mới...">
         </div>
         <div class="form-group">
             <input type="number" id="pPrice" placeholder="Giá tiền (VNĐ)...">
         </div>
         <button class="btn-success" onclick="addProduct()">Thêm Sản Phẩm</button>
+        
+        <!-- Bẫy ngầm trong giao diện Admin để dụ hacker -->
+        <div style="margin-top: 30px; padding: 10px; background: #0f172a; border-radius: 6px; border: 1px dashed #ef4444;">
+            <p style="font-size: 11px; color: #ef4444; margin-bottom: 5px;">⚠️ Khu vực nhạy cảm tối mật (Dành riêng cho Root Admin):</p>
+            <a href="/api/secret-admin-trap" target="_blank" style="font-size: 12px; color: #38bdf8; text-decoration: underline;">Tải xuống Key Root Admin Gốc (Đừng bấm vào đây nếu không có quyền)</a>
+        </div>
     </div>
 </div>
 
 <script>
     let currentUser = null;
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+        if (tabName === 'shop') {
+            document.getElementById('tab-shop').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        } else if (tabName === 'profile') {
+            document.getElementById('tab-profile').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        } else if (tabName === 'purchased') {
+            document.getElementById('tab-purchased').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        } else if (tabName === 'admin') {
+            document.getElementById('tab-admin').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn')[3].classList.add('active');
+        }
+    }
 
     async function init() {
         await checkAuth();
@@ -133,11 +174,9 @@
         const data = await res.json();
         if (data.success) {
             currentUser = data.user;
-            document.getElementById('login-card').classList.add('hidden');
             document.getElementById('logout-btn').classList.remove('hidden');
-            document.getElementById('user-card').classList.remove('hidden');
-            document.getElementById('security-card').classList.remove('hidden');
-            document.getElementById('password-card').classList.remove('hidden');
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('user-info-section').classList.remove('hidden');
 
             document.getElementById('disp-username').innerText = '@' + currentUser.username;
             document.getElementById('disp-role').innerText = currentUser.role === 'admin' ? 'Quản trị viên' : 'Thành viên';
@@ -150,7 +189,26 @@
             }
 
             if (currentUser.role === 'admin') {
-                document.getElementById('admin-card').classList.remove('hidden');
+                document.getElementById('tab-admin-btn').classList.remove('hidden');
+            }
+
+            // Hiển thị lịch sử mua hàng
+            const histList = document.getElementById('history-list');
+            if (currentUser.history && currentUser.history.length > 0) {
+                histList.innerHTML = '';
+                currentUser.history.forEach(h => {
+                    histList.innerHTML += `
+                        <div class="history-item">
+                            <div>
+                                <div style="font-weight: 600; color: #f1f5f9; font-size: 14px;">${h.productName}</div>
+                                <div style="font-size: 12px; color: #94a3b8;">Thời gian: ${h.time}</div>
+                            </div>
+                            <div style="color: #4ade80; font-weight: bold;">-${h.price.toLocaleString()}đ</div>
+                        </div>
+                    `;
+                });
+            } else {
+                histList.innerHTML = '<p style="color: #94a3b8;">Bạn chưa mua sản phẩm nào.</p>';
             }
         }
     }
@@ -241,6 +299,7 @@
     async function buyProduct(id) {
         if (!currentUser) {
             alert('Vui lòng đăng nhập để mua hàng!');
+            switchTab('profile');
             return;
         }
         if (!confirm('Xác nhận mua sản phẩm này?')) return;
@@ -274,10 +333,6 @@
     async function logout() {
         await fetch('/api/logout', { method: 'POST' });
         location.reload();
-    }
-
-    function toggleTheme() {
-        alert('Giao diện tối (Dark Mode) đang được kích hoạt tối ưu!');
     }
 
     init();
