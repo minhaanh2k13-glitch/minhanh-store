@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anh Store - Complete Edition</title>
+    <title>Anh Store - Secure Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -279,13 +279,7 @@
             <input type="text" id="admin-ban-u" class="modal-input" placeholder="Tên tài khoản cần ban">
             <button class="btn-action" style="background:var(--danger-color); color:#fff; margin-top:4px;" onclick="adminBanUser()">Ban tài khoản</button>
 
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">4. Tạo Mã Giảm Giá (Voucher)</h4>
-            <input type="text" id="admin-voucher-code" class="modal-input" placeholder="Mã code (VD: SALE50)">
-            <input type="number" id="admin-voucher-rate" class="modal-input" placeholder="% Giảm giá (VD: 10 = 10%)">
-            <button class="btn-action" style="background:var(--accent-color); margin-top:4px;" onclick="addVoucher()">Tạo Mã Giảm Giá</button>
-            <div id="admin-voucher-list" style="margin-top:8px;"></div>
-
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">5. Duyệt Yêu Cầu Nạp Tiền & Kho Hàng</h4>
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">4. Duyệt Yêu Cầu Nạp Tiền & Kho Hàng</h4>
             <div id="admin-pending-deposits"></div>
             <input type="text" id="admin-prod-name" class="modal-input" placeholder="Tên sản phẩm">
             <input type="number" id="admin-prod-price" class="modal-input" placeholder="Giá tiền">
@@ -299,7 +293,7 @@
 <!-- MODAL NẠP TIỀN KÈM QR CHUYỂN KHOẢN -->
 <div id="deposit-modal" class="modal">
     <div class="modal-content text-center">
-        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Nạp Tiền Qua QR Chuyển KhoẢn</h3>
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Nạp Tiền Qua QR Chuyển Khoản</h3>
         <p style="font-size:11px; color:var(--text-sub); margin-bottom:10px;">Quét mã QR bên dưới để chuyển khoản tự động:</p>
         
         <img src="https://api.vietqr.io/image/970436-123456789-Q9b3x8f.jpg?accountName=ANH%20STORE&amount=0&addInfo=NAP" alt="QR Nạp Tiền" style="width:160px; height:160px; background:#fff; padding:6px; border-radius:8px; margin:0 auto 10px auto; display:block;">
@@ -342,8 +336,6 @@
         <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Giỏ hàng</h3>
         <div id="cart-items-list" style="max-height:150px; overflow-y:auto; margin-bottom:8px;"></div>
         <div id="vip-discount-notice" style="font-size:11px; color:var(--success-color); margin-bottom:6px; font-weight:bold;"></div>
-        <input type="text" id="voucher-input" class="modal-input" placeholder="Nhập mã giảm giá">
-        <button class="btn-action" style="width:100%; background:#2a1545; border:1px solid var(--accent-color); margin-bottom:8px;" onclick="applyVoucher()">Áp dụng mã</button>
         <div style="font-size:13px; font-weight:bold; margin-bottom:10px;">Tổng thanh toán: <span id="cart-total-price" style="color:var(--success-color);">0đ</span></div>
         <div style="display:flex; justify-content:flex-end; gap:6px;">
             <button class="btn-action" style="background:#374151;" onclick="closeModal('cart-modal')">Đóng</button>
@@ -383,7 +375,6 @@
 
 let current = JSON.parse(localStorage.getItem("pro_curr") || "null");
 let cart = JSON.parse(localStorage.getItem("pro_cart") || "[]");
-let discountRate = 0;
 let savedBanner = localStorage.getItem("pro_banner") || '👻 HALLOWEEN FLASH SALE: Nhập mã giảm giá đặc biệt! 🦇';
 document.getElementById("display-marquee-text").innerText = savedBanner;
 
@@ -565,41 +556,6 @@ async function buyVipPackage(type, price) {
     initApp(current);
 }
 
-function getLocalVouchers() {
-    return JSON.parse(localStorage.getItem("pro_vouchers") || '[{"code": "MINHANH2K", "rate": 10}]');
-}
-
-function addVoucher() {
-    let code = document.getElementById("admin-voucher-code").value.trim();
-    let rate = parseInt(document.getElementById("admin-voucher-rate").value);
-    if (!code || !rate) { alert("Nhập đủ mã code và % giảm!"); return; }
-    let v = getLocalVouchers();
-    v.push({ code, rate });
-    localStorage.setItem("pro_vouchers", JSON.stringify(v));
-    document.getElementById("admin-voucher-code").value = "";
-    document.getElementById("admin-voucher-rate").value = "";
-    showToast("Đã tạo mã giảm giá!");
-    renderAdminLists();
-}
-
-function deleteVoucher(idx) {
-    let v = getLocalVouchers();
-    v.splice(idx, 1);
-    localStorage.setItem("pro_vouchers", JSON.stringify(v));
-    showToast("Đã xóa mã giảm giá!");
-    renderAdminLists();
-}
-
-function applyVoucher() {
-    let code = document.getElementById("voucher-input").value.trim();
-    let v = getLocalVouchers();
-    let found = v.find(x => x.code.toUpperCase() === code.toUpperCase());
-    if (!found) { alert("Mã giảm giá không tồn tại!"); return; }
-    discountRate = found.rate / 100;
-    showToast(`Đã áp dụng mã giảm ${found.rate}%!`);
-    updateCartUI();
-}
-
 async function adminDirectTopup() {
     let username = document.getElementById("admin-topup-user").value.trim();
     let amount = parseInt(document.getElementById("admin-topup-amount").value);
@@ -736,8 +692,7 @@ function updateCartUI() {
         noticeEl.innerText = "";
     }
 
-    let totalDiscountRate = Math.max(discountRate, vipDiscount);
-    let finalPrice = total * (1 - totalDiscountRate);
+    let finalPrice = total * (1 - vipDiscount);
     document.getElementById("cart-total-price").innerText = finalPrice.toLocaleString() + "đ";
 }
 
@@ -798,14 +753,6 @@ async function renderAdminLists() {
             <button class="btn-action" style="padding:3px 8px; background:var(--danger-color); color:#fff;" onclick="deleteProduct(${idx})">Xóa</button>
         </div>
     `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có sản phẩm.</p>";
-
-    let v = getLocalVouchers();
-    document.getElementById("admin-voucher-list").innerHTML = v.map((item, idx) => `
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:6px; border-radius:6px; margin-bottom:4px;">
-            <span><b>${item.code}</b> (-${item.rate}%)</span>
-            <button class="btn-action" style="padding:2px 6px; background:var(--danger-color); color:#fff;" onclick="deleteVoucher(${idx})">Xóa</button>
-        </div>
-    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có mã giảm giá.</p>";
 }
 
 async function approveDeposit(index) {
@@ -830,6 +777,7 @@ async function addNewProduct() {
     let name = document.getElementById("admin-prod-name").value.trim();
     let price = document.getElementById("admin-prod-price").value;
     let stock = document.getElementById("admin-prod-stock").value.trim();
+    if(!name || !price) { alert("Nhập đủ tên và giá sản phẩm!"); return; }
     let res = await (await fetch('/api/admin/add-product', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
