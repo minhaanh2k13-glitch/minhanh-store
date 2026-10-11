@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MinhAnh Store - Cửa Hàng Số & Hội Viên VIP</title>
+    <title>MinhAnh Store - Cửa Hàng Số & Dòng Tiền</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -11,8 +11,8 @@
         .container { width: 100%; max-width: 700px; }
         .banner { background: #1e293b; border: 1px dashed #38bdf8; padding: 12px; border-radius: 8px; text-align: center; color: #38bdf8; font-size: 14px; margin-bottom: 20px; font-weight: 500; }
         
-        .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid #334155; overflow-x: auto; }
-        .tab-btn { flex: 1; padding: 10px; background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 13px; border-radius: 6px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-align: center; }
+        .nav-tabs { display: flex; gap: 6px; margin-bottom: 20px; background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid #334155; overflow-x: auto; }
+        .tab-btn { flex: 1; padding: 10px 8px; background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-align: center; }
         .tab-btn.active { background: #0284c7; color: white; }
 
         .card { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -27,6 +27,8 @@
         .btn-danger:hover { background: #f43f5e; }
         .btn-success { background: #10b981; }
         .btn-success:hover { background: #059669; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-warning:hover { background: #d97706; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         .item-box { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .hidden { display: none; }
@@ -46,10 +48,11 @@
         </div>
     </div>
 
-    <!-- MENU TAB -->
+    <!-- MENU TAB (ĐÃ THÊM TAB LỊCH SỬ DÒNG TIỀN) -->
     <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchTab('shop')">🛒 Cửa Hàng</button>
-        <button class="tab-btn" onclick="switchTab('profile')">👤 Tài Khoản & Nạp Tiền</button>
+        <button class="tab-btn" onclick="switchTab('profile')">👤 Tài Khoản</button>
+        <button class="tab-btn" onclick="switchTab('deposits')">💰 Dòng Tiền</button>
         <button class="tab-btn" onclick="switchTab('purchased')">📦 Đã Mua</button>
         <button class="tab-btn hidden" id="tab-admin-btn" onclick="switchTab('admin')">🛠️ Quản Trị</button>
     </div>
@@ -88,14 +91,9 @@
 
             <div class="vip-box" style="border-color: #10b981;">
                 <h4 style="color: #10b981; font-size: 14px; margin-bottom: 6px;">💳 Gửi Yêu Cầu Nạp Tiền</h4>
-                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Chọn số tiền nạp, hệ thống sẽ gửi lệnh chờ Admin duyệt tay:</p>
+                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Nhập số tiền bạn muốn nạp:</p>
                 <div class="form-group" style="margin-bottom: 8px;">
-                    <select id="selectAmount">
-                        <option value="25000">Nạp 25.000đ (Đạt hạng Bạc - Giảm 5%)</option>
-                        <option value="50000">Nạp 50.000đ (Đạt hạng Bạc - Giảm 5%)</option>
-                        <option value="100000">Nạp 100.000đ (Đạt hạng Vàng - Giảm 20%)</option>
-                        <option value="500000">Nạp 500.000đ (Đạt hạng Vàng - Giảm 20%)</option>
-                    </select>
+                    <input type="number" id="customAmount" placeholder="Nhập số tiền (VD: 50000)..." min="1000" step="1000">
                 </div>
                 <button class="btn-success" onclick="requestDeposit()" style="width: 100%;">Gửi Yêu Cầu Nạp Tiền</button>
             </div>
@@ -117,13 +115,21 @@
         </div>
     </div>
 
-    <!-- TAB 3: ĐÃ MUA -->
+    <!-- TAB 3: LỊCH SỬ DÒNG TIỀN -->
+    <div id="tab-deposits" class="card hidden">
+        <h3 style="color: #38bdf8; margin-bottom: 12px;">💰 Lịch Sử Dòng Tiền (Nạp Tiền)</h3>
+        <div id="user-deposit-history" class="grid">
+            <p style="color: #94a3b8;">Vui lòng đăng nhập để xem lịch sử dòng tiền.</p>
+        </div>
+    </div>
+
+    <!-- TAB 4: ĐÃ MUA -->
     <div id="tab-purchased" class="card hidden">
         <h3 style="color: #38bdf8; margin-bottom: 12px;">Sản Phẩm Đã Mua</h3>
         <div id="history-list" class="grid"><p style="color: #94a3b8;">Vui lòng đăng nhập.</p></div>
     </div>
 
-    <!-- TAB 4: QUẢN TRỊ ADMIN -->
+    <!-- TAB 5: QUẢN TRỊ ADMIN -->
     <div id="tab-admin" class="card hidden" style="border-color: #f59e0b;">
         <h3 style="color: #f59e0b; margin-bottom: 15px;">🛠️ Bảng Điều Khiển Quản Trị Viên</h3>
         
@@ -160,7 +166,7 @@
             <button class="btn-success" onclick="addProduct()">Thêm Sản Phẩm</button>
         </div>
 
-        <h4 style="color: #94a3b8; font-size: 14px; margin: 15px 0 8px 0;">Quản lý sản phẩm hiện có:</h4>
+        <h4 style="color: #94a3b8; font-size: 14px; margin: 15px 0 8px 0;">Quản lý sản phẩm hiện có (Sửa / Xóa):</h4>
         <div id="admin-product-list" style="margin-bottom: 20px;"></div>
 
         <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
@@ -190,12 +196,15 @@
         } else if (tabName === 'profile') {
             document.getElementById('tab-profile').classList.remove('hidden');
             document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        } else if (tabName === 'deposits') {
+            document.getElementById('tab-deposits').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn')[2].classList.add('active');
         } else if (tabName === 'purchased') {
             document.getElementById('tab-purchased').classList.remove('hidden');
-            document.querySelectorAll('.tab-btn')[2].classList.add('active');
+            document.querySelectorAll('.tab-btn')[3].classList.add('active');
         } else if (tabName === 'admin') {
             document.getElementById('tab-admin').classList.remove('hidden');
-            document.querySelectorAll('.tab-btn')[3].classList.add('active');
+            document.querySelectorAll('.tab-btn')[4].classList.add('active');
             loadAdminData();
         }
     }
@@ -262,6 +271,30 @@
                 document.getElementById('tab-admin-btn').classList.remove('hidden');
             }
 
+            // Hiển thị lịch sử dòng tiền (nạp tiền) của user
+            const depList = document.getElementById('user-deposit-history');
+            if (currentUser.deposits && currentUser.deposits.length > 0) {
+                depList.innerHTML = '';
+                currentUser.deposits.forEach(d => {
+                    let statusColor = '#38bdf8'; // Chờ duyệt
+                    if (d.status === 'Đã duyệt') statusColor = '#4ade80';
+                    if (d.status === 'Đã hủy') statusColor = '#f43f5e';
+
+                    depList.innerHTML += `
+                        <div class="item-box">
+                            <div>
+                                <div style="font-weight: 600; color: #f1f5f9; font-size: 14px;">Nạp tiền: +${d.amount.toLocaleString()}đ</div>
+                                <div style="font-size: 12px; color: #94a3b8;">Thời gian: ${d.time}</div>
+                            </div>
+                            <div style="font-weight: bold; color: ${statusColor}; font-size: 13px;">${d.status}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                depList.innerHTML = '<p style="color: #94a3b8;">Chưa có lịch sử nạp tiền nào.</p>';
+            }
+
+            // Hiển thị lịch sử mua hàng
             const histList = document.getElementById('history-list');
             if (currentUser.history && currentUser.history.length > 0) {
                 histList.innerHTML = '';
@@ -283,7 +316,11 @@
     }
 
     async function requestDeposit() {
-        const amount = document.getElementById('selectAmount').value;
+        const amount = document.getElementById('customAmount').value;
+        if (!amount || amount <= 0) {
+            alert('Vui lòng nhập số tiền hợp lệ!');
+            return;
+        }
         const res = await fetch('/api/deposit-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -291,6 +328,10 @@
         });
         const data = await res.json();
         alert(data.message);
+        if (data.success) {
+            document.getElementById('customAmount').value = '';
+            checkAuth();
+        }
     }
 
     async function login() {
@@ -415,8 +456,13 @@
             data.prods.forEach(p => {
                 pList.innerHTML += `
                     <div class="item-box">
-                        <div><b>${p.name}</b> - <span style="color:#4ade80">${p.price.toLocaleString()}đ</span></div>
-                        <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteProduct('${p.id}')">Xóa</button>
+                        <div>
+                            <b>${p.name}</b> - <span style="color:#4ade80">${p.price.toLocaleString()}đ</span>
+                        </div>
+                        <div>
+                            <button class="btn-warning" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;" onclick="editProduct('${p.id}', '${p.name}', ${p.price})">Sửa</button>
+                            <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteProduct('${p.id}')">Xóa</button>
+                        </div>
                     </div>
                 `;
             });
@@ -506,7 +552,31 @@
         });
         const data = await res.json();
         alert(data.message);
-        if (data.success) location.reload();
+        if (data.success) {
+            document.getElementById('pName').value = '';
+            document.getElementById('pPrice').value = '';
+            loadStoreData();
+            loadAdminData();
+        }
+    }
+
+    async function editProduct(id, oldName, oldPrice) {
+        const newName = prompt('Nhập tên sản phẩm mới:', oldName);
+        if (newName === null) return;
+        const newPrice = prompt('Nhập giá tiền mới (VNĐ):', oldPrice);
+        if (newPrice === null) return;
+
+        const res = await fetch('/api/admin/edit-product', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, name: newName, price: newPrice })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) {
+            loadStoreData();
+            loadAdminData();
+        }
     }
 
     async function deleteProduct(id) {
@@ -518,7 +588,10 @@
         });
         const data = await res.json();
         alert(data.message);
-        if (data.success) location.reload();
+        if (data.success) {
+            loadStoreData();
+            loadAdminData();
+        }
     }
 
     async function addCoupon() {
@@ -531,7 +604,11 @@
         });
         const data = await res.json();
         alert(data.message);
-        if (data.success) location.reload();
+        if (data.success) {
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponDisc').value = '';
+            loadAdminData();
+        }
     }
 
     async function deleteCoupon(code) {
