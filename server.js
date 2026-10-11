@@ -9,7 +9,6 @@ const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-// Lấy trực tiếp từ biến môi trường của Render, nếu không có mới dùng chuỗi dự phòng
 const JWT_SECRET = process.env.JWT_SECRET || 'minhanh_store_super_secret_key_2026';
 
 app.use(express.json());
@@ -43,6 +42,7 @@ function readDB() {
     if (!data.blacklist) data.blacklist = [];
     if (!data.logs) data.logs = [];
     if (!data.prods) data.prods = [];
+    if (!data.history) data.history = [];
     return data;
 }
 
@@ -66,7 +66,7 @@ function securityShield(req, res, next) {
     }
     const db = readDB();
     if (db.blacklist && db.blacklist.includes(clientIP)) {
-        return res.status(403).json({ success: false, message: 'Truy cập bị từ chối vĩnh viễn!' });
+        return res.status(403).json({ success: false, message: 'Truy cập bị từ chối vĩnh viễn do hành vi xâm nhập!' });
     }
     next();
 }
@@ -96,14 +96,23 @@ function verifyToken(req, res, next) {
 function verifyAdmin(req, res, next) {
     verifyToken(req, res, () => {
         if (req.user.role !== 'admin') {
-            banAttacker(req, 'User thường gọi API Admin');
+            banAttacker(req, 'User thường cố tình gọi API Admin');
             return res.status(403).json({ success: false, message: 'Từ chối quyền truy cập!' });
         }
         next();
     });
 }
 
-// API
+// ==================== TRANG BẪY HONEYPOT (DỤ KẺ GIAN) ====================
+app.all('/api/secret-admin-trap', (req, res) => {
+    banAttacker(req, 'Phát hiện truy cập vào điểm bẫy Honeypot mật khẩu gốc!');
+    res.status(403).json({
+        success: false,
+        message: 'CẢNH BÁO: IP và dấu vết thiết bị của bạn đã bị ghi nhận và đưa vào danh sách đen vĩnh viễn vì hành vi quét hệ thống!'
+    });
+});
+
+// ==================== API CHÍNH ====================
 app.get('/api/products', (req, res) => {
     const db = readDB();
     res.json({ success: true, prods: db.prods });
@@ -134,7 +143,20 @@ app.get('/api/me', verifyToken, (req, res) => {
     const db = readDB();
     const user = db.accs.find(x => x.username === req.user.username);
     if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy' });
-    res.json({ success: true, user: { username: user.username, role: user.role, balance: user.balance, is2FAEnabled: user.is2FAEnabled } });
+    
+    // Lọc lịch sử mua hàng riêng của user này
+    const userHistory = db.history.filter(h => h.username === user.username);
+
+    res.json({ 
+        success: true, 
+        user: { 
+            username: user.username, 
+            role: user.role, 
+            balance: user.balance, 
+            is2FAEnabled: user.is2FAEnabled,
+            history: userHistory
+        } 
+    });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -142,19 +164,16 @@ app.post('/api/logout', (req, res) => {
     res.json({ success: true, message: 'Đăng xuất thành công' });
 });
 
-// 2FA Setup & Verify
 app.post('/api/2fa/setup', verifyToken, async (req, res) => {
     const db = readDB();
     const user = db.accs.find(x => x.username === req.user.username);
-    if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy user' });
-
     const secret = speakeasy.generateSecret({ name: `MinhAnhStore (${user.username})` });
     user.tempSecret = secret.base32;
     writeDB(db);
 
     QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
         if (err) return res.status(500).json({ success: false, message: 'Lỗi tạo QR' });
-        res.json({ success: true, qrCodeUrl: data_url, secret: secret.base32 });
+        res.json({ success: true, qrCodeUrl: data_url });
     });
 });
 
@@ -170,12 +189,11 @@ app.post('/api/2fa/verify', verifyToken, (req, res) => {
         user.is2FAEnabled = true;
         delete user.tempSecret;
         writeDB(db);
-        return res.json({ success: true, message: 'Bật Google Authenticator thành công!' });
+        return res.json({ success: true, message: 'Bật 2FA thành công!' });
     }
     res.json({ success: false, message: 'Mã OTP không chính xác!' });
 });
 
-// Đổi mật khẩu
 app.post('/api/change-password', verifyToken, (req, res) => {
     const { oldPassword, newPassword } = req.body;
     const db = readDB();
@@ -214,5 +232,5 @@ app.post('/api/admin/add-product', verifyAdmin, (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server chạy bảo mật tại cổng ${PORT}`);
+    console.log(`Server chạy an toàn tại cổng ${PORT}`);
 });
