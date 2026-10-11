@@ -39,6 +39,7 @@ function readDB() {
             banner: 'Mã giảm giá "MINHANH2K" giảm ngay 10% tổng đơn hàng! 🔒',
             deposits: [],
             history: [], 
+            transactions: [],
             logs: [] 
         };
         fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
@@ -50,6 +51,7 @@ function readDB() {
     if (!data.accs) data.accs = [];
     if (!data.coupons) data.coupons = [];
     if (!data.deposits) data.deposits = [];
+    if (!data.transactions) data.transactions = [];
     if (!data.banner) data.banner = 'Chào mừng đến với MinhAnh Store!';
     if (!data.history) data.history = [];
     
@@ -130,6 +132,7 @@ app.get('/api/me', verifyToken, (req, res) => {
     
     const userHistory = db.history.filter(h => h.username === user.username);
     const userDeposits = db.deposits.filter(d => d.username === user.username);
+    const userTransactions = db.transactions ? db.transactions.filter(t => t.username === user.username) : [];
     const rank = getMembershipRank(user.totalDeposited || 0);
 
     res.json({ 
@@ -142,7 +145,8 @@ app.get('/api/me', verifyToken, (req, res) => {
             rank: rank,
             is2FAEnabled: user.is2FAEnabled,
             history: userHistory,
-            deposits: userDeposits
+            deposits: userDeposits,
+            transactions: userTransactions
         } 
     });
 });
@@ -160,6 +164,7 @@ app.post('/api/deposit-request', verifyToken, (req, res) => {
     }
 
     const db = readDB();
+    if (!db.deposits) db.deposits = [];
     const depositId = 'DEP_' + Date.now();
     
     db.deposits.push({
@@ -201,6 +206,8 @@ app.post('/api/buy', verifyToken, (req, res) => {
     }
 
     user.balance -= finalPrice;
+    
+    if (!db.history) db.history = [];
     db.history.push({ 
         username: user.username, 
         productName: product.name, 
@@ -208,6 +215,16 @@ app.post('/api/buy', verifyToken, (req, res) => {
         vipRankApplied: rank.name,
         time: new Date().toLocaleString() 
     });
+
+    if (!db.transactions) db.transactions = [];
+    db.transactions.push({
+        username: user.username,
+        type: 'Mua hàng',
+        amount: -finalPrice,
+        description: `Mua sản phẩm: ${product.name}`,
+        time: new Date().toLocaleString()
+    });
+
     writeDB(db);
 
     res.json({ success: true, message: `Mua thành công ${product.name}! Đã trừ ${finalPrice.toLocaleString()}đ`, newBalance: user.balance });
@@ -272,6 +289,8 @@ app.get('/api/admin/data', verifyAdmin, (req, res) => {
 app.post('/api/admin/approve-deposit', verifyAdmin, (req, res) => {
     const { depositId } = req.body;
     const db = readDB();
+    if (!db.deposits) return res.json({ success: false, message: 'Không tìm thấy danh sách nạp tiền!' });
+
     const dep = db.deposits.find(d => d.id === depositId);
     if (!dep || dep.status === 'Đã duyệt') return res.json({ success: false, message: 'Yêu cầu không hợp lệ hoặc đã được duyệt trước đó!' });
 
@@ -282,6 +301,15 @@ app.post('/api/admin/approve-deposit', verifyAdmin, (req, res) => {
     user.totalDeposited = (user.totalDeposited || 0) + dep.amount;
     dep.status = 'Đã duyệt';
 
+    if (!db.transactions) db.transactions = [];
+    db.transactions.push({
+        username: user.username,
+        type: 'Nạp tiền',
+        amount: dep.amount,
+        description: `Nạp tiền qua QR (Admin duyệt)`,
+        time: new Date().toLocaleString()
+    });
+
     writeDB(db);
     res.json({ success: true, message: `Đã duyệt và cộng ${dep.amount.toLocaleString()}đ thành công cho @${user.username}!` });
 });
@@ -289,6 +317,8 @@ app.post('/api/admin/approve-deposit', verifyAdmin, (req, res) => {
 app.post('/api/admin/reject-deposit', verifyAdmin, (req, res) => {
     const { depositId } = req.body;
     const db = readDB();
+    if (!db.deposits) return res.json({ success: false, message: 'Không tìm thấy dữ liệu!' });
+
     const dep = db.deposits.find(d => d.id === depositId);
     if (dep) dep.status = 'Đã hủy';
     writeDB(db);
