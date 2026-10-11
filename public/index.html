@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anh Store - Network Whitelist & VIP Discount Edition</title>
+    <title>Anh Store - Secure Fixed Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -91,6 +91,7 @@
             font-weight: 700; cursor: pointer; font-size: 12px;
             box-shadow: 0 0 10px rgba(255, 117, 24, 0.3);
             transition: all 0.2s;
+            position: relative; z-index: 10;
         }
         .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
         .modal-input {
@@ -98,6 +99,7 @@
             background: rgba(10, 5, 20, 0.8); border: 1px solid var(--border-color);
             color: var(--text-color); border-radius: 8px; box-sizing: border-box;
             font-family: 'Montserrat', sans-serif;
+            position: relative; z-index: 10;
         }
 
         .bottom-nav {
@@ -254,7 +256,7 @@
             <div id="my-history-list"></div>
         </div>
         <div class="card">
-            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Biến động số dư</h3>
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Lịch sử dòng tiền (Biến động số dư)</h3>
             <div id="my-tx-list"></div>
         </div>
     </div>
@@ -369,6 +371,28 @@
 </div>
 
 <script>
+// --- CHẶN CODE VÀ PHÍM TẮT (DEVTOOLS, CTRL+U) ---
+(function(){
+    document.addEventListener("contextmenu", e => e.preventDefault());
+    document.addEventListener("keydown", function(e){
+        const k = e.key.toLowerCase();
+        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(k)) || (e.ctrlKey && k === "u")) {
+            e.preventDefault();
+            alert("⚠️ Cảnh báo bảo mật: Hành động kiểm tra mã nguồn bị cấm! Hệ thống sẽ reset phiên làm việc.");
+            localStorage.removeItem("pro_curr");
+            location.reload();
+            return false;
+        }
+    });
+    // Phát hiện mở DevTools qua kích thước cửa sổ
+    setInterval(() => {
+        if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+            localStorage.removeItem("pro_curr");
+            location.reload();
+        }
+    }, 1000);
+})();
+
 function getNetworkWhitelist() {
     return JSON.parse(localStorage.getItem("pro_network_whitelist") || '["127.0.0.1", "localhost", "192.168."] ');
 }
@@ -710,20 +734,18 @@ function updateCartUI() {
     });
     list.innerHTML = html || "<p style='font-size:11px; color:var(--text-sub);'>Giỏ hàng trống</p>";
     
-    // Tính toán giảm giá theo cấp độ VIP của tài khoản hiện tại
     let vipDiscount = 0;
     let noticeEl = document.getElementById("vip-discount-notice");
     if (current && current.vip === 'silver') {
-        vipDiscount = 0.10; // Giảm 10%
+        vipDiscount = 0.10;
         noticeEl.innerText = "⭐ Đã áp dụng đặc quyền VIP Bạc: Giảm 10%";
     } else if (current && current.vip === 'gold') {
-        vipDiscount = 0.20; // Giảm 20%
+        vipDiscount = 0.20;
         noticeEl.innerText = "⭐ Đã áp dụng đặc quyền VIP Vàng: Giảm 20%";
     } else {
         noticeEl.innerText = "";
     }
 
-    // Ưu tiên mức giảm cao nhất giữa Voucher mã code và VIP (hoặc cộng dồn tùy ý, ở đây chọn mức giảm lớn nhất)
     let totalDiscountRate = Math.max(discountRate, vipDiscount);
     let finalPrice = total * (1 - totalDiscountRate);
     document.getElementById("cart-total-price").innerText = finalPrice.toLocaleString() + "đ";
@@ -752,7 +774,7 @@ async function renderHistory() {
 
     let txs = await fetchAPI("txs");
     let myTxs = txs.filter(x => x.username === current.username);
-    document.getElementById("my-tx-list").innerHTML = myTxs.map(t => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${t.time}] ${t.desc}: <b style="color:var(--success-color);">+${t.amount.toLocaleString()}đ</b></div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có biến động số dư</p>";
+    document.getElementById("my-tx-list").innerHTML = myTxs.map(t => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${t.time}] ${t.desc}: <b style="color:var(--success-color);">+${t.amount.toLocaleString()}đ</b></div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử dòng tiền</p>";
 }
 
 async function submitDeposit() {
@@ -842,19 +864,6 @@ async function deleteProduct(index) {
     })).json();
     if (res.success) { showToast("Đã xóa!"); renderShop(); renderAdminLists(); }
 }
-</script>
-
-<script>
-(function(){
-    document.addEventListener("contextmenu", e => e.preventDefault());
-    document.addEventListener("keydown", function(e){
-        const k = e.key.toLowerCase();
-        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(k)) || (e.ctrlKey && k === "u")) {
-            e.preventDefault();
-            return false;
-        }
-    });
-})();
 </script>
 
 </body>
