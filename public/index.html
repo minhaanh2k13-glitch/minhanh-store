@@ -6,292 +6,803 @@
     <title>Anh Store - Secure Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {--bg-color: #0b0716;--card-bg: rgba(21, 11, 36, 0.85);--text-color: #f8fafc;--text-sub: #b3a4c4;--accent-color: #ff7518;--border-color: #3b1d59;--danger-color: #ef4444;--success-color: #22c55e;--neon-purple: #b537f2;--gold-color: #fbbf24;--silver-color: #94a3b8;}
-        .light-mode {--bg-color: #f1f5f9;--card-bg: #ffffff;--text-color: #0f172a;--text-sub: #64748b;--accent-color: #0284c7;--border-color: #cbd5e1;}
-        body {background-color: var(--bg-color);color: var(--text-color);font-family: 'Montserrat', sans-serif;margin: 0;padding: 0 0 100px 0;transition: background 0.3s, color 0.3s;background-image: radial-gradient(circle at 50% 10%, #2e1147 0%, #0b0716 75%);min-height: 100vh;}
-        header {position: fixed;top: 20px;left: 30px;z-index: 100;}
-        .logo {font-family: 'Creepster', cursive;font-size: 2.8rem;color: var(--accent-color);text-shadow: 0 0 10px rgba(255, 117, 24, 0.8), 0 0 20px rgba(181, 55, 242, 0.5);letter-spacing: 2px;}
-        .system-status {position: fixed;top: 25px;right: 30px;background: rgba(15, 7, 28, 0.9);border: 1px dashed var(--neon-purple);padding: 6px 14px;border-radius: 8px;font-size: 0.8rem;color: var(--neon-purple);z-index: 100;display: flex;align-items: center;gap: 8px;}
-        .status-dot {width: 7px;height: 7px;background-color: var(--success-color);border-radius: 50%;box-shadow: 0 0 8px var(--success-color);}
-        .container {max-width: 800px;margin: 0 auto;padding: 100px 20px 20px 20px;}
-        .card {background: var(--card-bg);border: 2px solid var(--border-color);border-radius: 16px;padding: 20px;margin-bottom: 15px;box-shadow: 0 8px 25px rgba(0,0,0,0.4);backdrop-filter: blur(8px);}
-        .btn-action {background: var(--accent-color);color: #fff;border: none;padding: 8px 14px;border-radius: 8px;font-weight: 700;cursor: pointer;font-size: 12px;box-shadow: 0 0 10px rgba(255, 117, 24, 0.3);transition: all 0.2s;position: relative;z-index: 10;}
-        .btn-action:hover {opacity: 0.9;transform: translateY(-1px);}
-        .modal-input {width: 100%;padding: 10px;margin: 6px 0;background: rgba(10, 5, 20, 0.8);border: 1px solid var(--border-color);color: var(--text-color);border-radius: 8px;box-sizing: border-box;font-family: 'Montserrat', sans-serif;position: relative;z-index: 10;}
-        .bottom-nav {position: fixed;bottom: 25px;left: 50%;transform: translateX(-50%);background: rgba(15, 8, 25, 0.95);border: 2px solid var(--accent-color);border-radius: 50px;display: flex;justify-content: space-around;padding: 12px 30px;z-index: 100;backdrop-filter: blur(10px);box-shadow: 0 0 25px rgba(255, 117, 24, 0.3);width: 90%;max-width: 500px;}
-        .nav-item {background: none;border: none;color: var(--text-sub);font-size: 11px;font-weight: 700;cursor: pointer;text-transform: uppercase;letter-spacing: 1px;transition: color 0.3s;}
-        .nav-item.active {color: var(--accent-color);text-shadow: 0 0 8px var(--accent-color);}
-        .tab-content {display: none;}
-        .tab-content.active {display: block;}
-        .modal {position: fixed;top: 0;left: 0;right: 0;bottom: 0;background: rgba(5, 2, 10, 0.85);display: none;justify-content: center;align-items: center;z-index: 1000;backdrop-filter: blur(5px);}
-        .modal-content {background: var(--card-bg);padding: 24px;border-radius: 16px;width: 90%;max-width: 400px;border: 2px solid var(--accent-color);box-shadow: 0 0 30px rgba(255, 117, 24, 0.3);}
-        #toast {position: fixed;top: 20px;left: 50%;transform: translateX(-50%);background: #1e0d30;border: 1px solid var(--accent-color);color: #fff;padding: 10px 20px;border-radius: 30px;font-size: 13px;z-index: 9999;opacity: 0;transition: opacity 0.3s;pointer-events: none;box-shadow: 0 0 15px rgba(255, 117, 24, 0.5);}
-        #toast.show {opacity: 1;}
-        .product-item {display: flex;justify-content: space-between;align-items: center;padding: 12px 0;border-bottom: 1px dashed var(--border-color);}
-        .float-tg {position: fixed;right: 20px;bottom: 95px;background: #9b30ff;color: #fff;width: 44px;height: 44px;border-radius: 50%;display: flex;justify-content: center;align-items: center;text-decoration: none;font-size: 20px;box-shadow: 0 0 15px rgba(155, 48, 255, 0.7);z-index: 99;border: 2px solid var(--accent-color);}
-        .badge-admin {background: var(--danger-color);color: #fff;padding: 3px 8px;border-radius: 6px;font-size: 10px;font-weight: bold;}
-        .badge-vip-silver {background: var(--silver-color);color: #000;padding: 3px 8px;border-radius: 6px;font-size: 10px;font-weight: bold;}
-        .badge-vip-gold {background: var(--gold-color);color: #000;padding: 3px 8px;border-radius: 6px;font-size: 10px;font-weight: bold;}
-        .marquee-banner {background: rgba(255, 117, 24, 0.1);border: 1px dashed var(--accent-color);padding: 8px;border-radius: 8px;margin-bottom: 15px;overflow: hidden;white-space: nowrap;}
-        .marquee-text {display: inline-block;animation: marquee 18s linear infinite;font-size: 12px;color: var(--accent-color);font-weight: bold;font-family: 'Creepster', cursive;letter-spacing: 1px;}
-        @keyframes marquee {0% {transform: translateX(100%);} 100% {transform: translateX(-100%);}}
-        .ghost-decor {position: fixed;bottom: 30px;left: 30px;font-size: 2.5rem;animation: floatGhost 4s ease-in-out infinite alternate;z-index: 10;pointer-events: none;}
-        @keyframes floatGhost {0% {transform: translateY(0);opacity: 0.6;} 100% {transform: translateY(-20px);opacity: 1;}}
+        :root {
+            --bg-color: #0b0716;
+            --card-bg: rgba(21, 11, 36, 0.85);
+            --text-color: #f8fafc;
+            --text-sub: #b3a4c4;
+            --accent-color: #ff7518;
+            --border-color: #3b1d59;
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --neon-purple: #b537f2;
+            --gold-color: #fbbf24;
+            --silver-color: #94a3b8;
+        }
+        .light-mode {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --text-sub: #64748b;
+            --accent-color: #0284c7;
+            --border-color: #cbd5e1;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Montserrat', sans-serif;
+            margin: 0; padding: 0 0 100px 0;
+            transition: background 0.3s, color 0.3s;
+            background-image: radial-gradient(circle at 50% 10%, #2e1147 0%, #0b0716 75%);
+            min-height: 100vh;
+        }
+
+        header {
+            position: fixed;
+            top: 20px;
+            left: 30px;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Creepster', cursive;
+            font-size: 2.8rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(255, 117, 24, 0.8), 0 0 20px rgba(181, 55, 242, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .system-status {
+            position: fixed;
+            top: 25px;
+            right: 30px;
+            background: rgba(15, 7, 28, 0.9);
+            border: 1px dashed var(--neon-purple);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--neon-purple);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 7px; height: 7px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 100px 20px 20px 20px; }
+        
+        .card {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px; margin-bottom: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+        }
+        .btn-action {
+            background: var(--accent-color);
+            color: #fff; border: none;
+            padding: 8px 14px; border-radius: 8px;
+            font-weight: 700; cursor: pointer; font-size: 12px;
+            box-shadow: 0 0 10px rgba(255, 117, 24, 0.3);
+            transition: all 0.2s;
+            position: relative; z-index: 10;
+        }
+        .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
+        .modal-input {
+            width: 100%; padding: 10px; margin: 6px 0;
+            background: rgba(10, 5, 20, 0.8); border: 1px solid var(--border-color);
+            color: var(--text-color); border-radius: 8px; box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+            position: relative; z-index: 10;
+        }
+
+        .bottom-nav {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            background: rgba(15, 8, 25, 0.95); border: 2px solid var(--accent-color);
+            border-radius: 50px; display: flex; justify-content: space-around; padding: 12px 30px; z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 25px rgba(255, 117, 24, 0.3);
+            width: 90%; max-width: 500px;
+        }
+        .nav-item {
+            background: none; border: none; color: var(--text-sub);
+            font-size: 11px; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+        .nav-item.active { color: var(--accent-color); text-shadow: 0 0 8px var(--accent-color); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(5, 2, 10, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content { 
+            background: var(--card-bg); padding: 24px; border-radius: 16px; width: 90%; max-width: 400px; 
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 30px rgba(255, 117, 24, 0.3);
+        }
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #1e0d30; border: 1px solid var(--accent-color); color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px;
+            z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            box-shadow: 0 0 15px rgba(255, 117, 24, 0.5);
+        }
+        #toast.show { opacity: 1; }
+        .product-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px dashed var(--border-color);
+        }
+        .float-tg {
+            position: fixed; right: 20px; bottom: 95px; background: #9b30ff; color: #fff;
+            width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; text-decoration: none; font-size: 20px; box-shadow: 0 0 15px rgba(155, 48, 255, 0.7); z-index: 99;
+            border: 2px solid var(--accent-color);
+        }
+        .badge-admin { background: var(--danger-color); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .badge-vip-silver { background: var(--silver-color); color: #000; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .badge-vip-gold { background: var(--gold-color); color: #000; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        
+        .marquee-banner { background: rgba(255, 117, 24, 0.1); border: 1px dashed var(--accent-color); padding: 8px; border-radius: 8px; margin-bottom: 15px; overflow: hidden; white-space: nowrap; }
+        .marquee-text { display: inline-block; animation: marquee 18s linear infinite; font-size: 12px; color: var(--accent-color); font-weight: bold; font-family: 'Creepster', cursive; letter-spacing: 1px; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        .ghost-decor {
+            position: fixed; bottom: 30px; left: 30px; font-size: 2.5rem;
+            animation: floatGhost 4s ease-in-out infinite alternate; z-index: 10; pointer-events: none;
+        }
+        @keyframes floatGhost {
+            0% { transform: translateY(0); opacity: 0.6; }
+            100% { transform: translateY(-20px); opacity: 1; }
+        }
     </style>
 </head>
 <body id="main-body">
 
-<header><div class="logo">Anh Store</div></header>
-<div class="system-status"><div class="status-dot"></div><span>Secure & 2FA Active</span></div>
+<header>
+    <div class="logo">Anh Store</div>
+</header>
+
+<div class="system-status">
+    <div class="status-dot"></div>
+    <span>Secure & 2FA Active</span>
+</div>
+
 <div id="toast">Thông báo hệ thống!</div>
 <a href="https://t.me/minhanh2k" target="_blank" class="float-tg">🦇</a>
 
+<!-- MÀN HÌNH ĐĂNG NHẬP -->
 <div id="auth-screen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-color); z-index:9999; display:flex; justify-content:center; align-items:center; padding:15px; background-image: radial-gradient(circle at 50% 50%, #2e1147 0%, #0b0716 85%);">
     <div class="card" style="width:100%; max-width:340px; text-align:center;">
         <h2 style="font-family:'Creepster', cursive; font-size: 2.8rem; margin-top:0; color:var(--accent-color); text-shadow: 0 0 10px rgba(255,117,24,0.7);">Anh Store</h2>
         <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">🔒 Đăng nhập hệ thống bảo mật 🔒</p>
         <input type="text" id="auth-u" class="modal-input" placeholder="Tên đăng nhập">
         <input type="password" id="auth-p" class="modal-input" placeholder="Mật khẩu">
-        <div id="otp-group" style="display:none; margin-top:6px;"><input type="text" id="auth-otp" class="modal-input" placeholder="Mã Google Authenticator (6 số)" maxlength="6"></div>
+        <div id="otp-group" style="display:none; margin-top:6px;">
+            <input type="text" id="auth-otp" class="modal-input" placeholder="Mã Google Authenticator (6 số)" maxlength="6">
+        </div>
         <button class="btn-action" style="width:100%; margin-top:12px; padding:11px;" onclick="_0x5a1b('login')">Đăng Nhập</button>
     </div>
 </div>
 
 <div class="container">
-    <div class="marquee-banner"><span id="display-marquee-text" class="marquee-text">👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng đơn hàng ma quái! 🦇</span></div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <div style="font-weight: 800; font-size: 13px; color: var(--neon-purple);">⚡ Trạng thái: <span id="admin-badge-span" class="badge-admin" style="display:none;">ADMIN</span> <span id="vip-badge-span" style="display:none;"></span> Hoạt động</div>
-        <div style="display: flex; gap: 6px; align-items: center;"><button class="btn-action" style="padding: 5px 10px; font-size: 10px; background: #2a1545;" onclick="_0x5a1b('theme')">Theme</button><button class="btn-action" style="padding: 5px 10px; font-size: 10px; background: var(--danger-color);" onclick="_0x5a1b('logout')">Thoát</button></div>
+    <div class="marquee-banner">
+        <span id="display-marquee-text" class="marquee-text">👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng đơn hàng ma quái! 🦇</span>
     </div>
 
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div style="font-weight: 800; font-size: 13px; color: var(--neon-purple);">
+            ⚡ Trạng thái: <span id="admin-badge-span" class="badge-admin" style="display:none;">ADMIN</span> 
+            <span id="vip-badge-span" style="display:none;"></span> Hoạt động
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="btn-action" style="padding: 5px 10px; font-size: 10px; background: #2a1545;" onclick="_0x5a1b('theme')">Theme</button>
+            <button class="btn-action" style="padding: 5px 10px; font-size: 10px; background: var(--danger-color);" onclick="_0x5a1b('logout')">Thoát</button>
+        </div>
+    </div>
+
+    <!-- TAB TRANG CHỦ -->
     <div id="tab-home" class="tab-content active">
         <div class="card">
             <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Thông tin tài khoản</h3>
             <p id="acc-username-display" style="font-size:12px; margin:4px 0;">Tài khoản: --</p>
             <p id="acc-role-display" style="font-size:12px; margin:4px 0;">Quyền hạn: --</p>
             <p style="font-size:12px; margin:4px 0;">Số dư: <b id="user-balance" style="color:var(--success-color);">0đ</b></p>
-            <div style="display:flex; gap:8px; margin-top:10px;"><button class="btn-action" onclick="_0x5a1b('modal_dep')">Nạp tiền ngay</button><button class="btn-action" style="background:var(--gold-color); color:#000;" onclick="_0x5a1b('modal_vip')">⭐ Nâng cấp VIP</button></div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn-action" onclick="_0x5a1b('modal_dep')">Nạp tiền ngay</button>
+                <button class="btn-action" style="background:var(--gold-color); color:#000;" onclick="_0x5a1b('modal_vip')">⭐ Nâng cấp VIP</button>
+            </div>
         </div>
+
+        <!-- CÀI ĐẶT GOOGLE AUTHENTICATOR (2FA) -->
         <div class="card" id="card-2fa-setting">
             <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Bảo mật Google Authenticator (2FA)</h3>
             <p id="status-2fa" style="font-size:11px; color:var(--text-sub);">Trạng thái: Đang tắt</p>
             <div id="2fa-setup-container" style="display:none; text-align:center; margin-top:8px;">
-                <p style="font-size:11px;">Quét mã QR bằng ứng dụng Google Authenticator:</p><img id="qr-code-img" src="" alt="QR Code" style="width:140px; height:140px; background:#fff; padding:4px; border-radius:6px; margin:4px auto; display:block;">
-                <input type="text" id="verify-otp-input" class="modal-input" placeholder="Nhập mã 6 số" maxlength="6">
+                <p style="font-size:11px;">Quét mã QR bằng ứng dụng Google Authenticator trên điện thoại:</p>
+                <img id="qr-code-img" src="" alt="QR Code" style="width:140px; height:140px; background:#fff; padding:4px; border-radius:6px; margin:4px auto; display:block;">
+                <input type="text" id="verify-otp-input" class="modal-input" placeholder="Nhập mã 6 số từ app để xác thực" maxlength="6">
                 <button class="btn-action" style="background:var(--success-color); color:#000; width:100%; margin-top:4px;" onclick="_0x5a1b('verify_2fa')">Xác thực và Bật 2FA</button>
             </div>
             <button class="btn-action" id="btn-toggle-2fa" style="margin-top:8px;" onclick="_0x5a1b('setup_2fa')">Bật Google Authenticator</button>
         </div>
     </div>
 
-    <div id="tab-shop" class="tab-content"><div class="card"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;"><h3 style="margin:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Danh mục sản phẩm</h3><button class="btn-action" style="background:#2a1545; border:1px solid var(--accent-color);" onclick="_0x5a1b('modal_cart')">🛒 Giỏ (<span id="cart-count">0</span>)</button></div><div id="product-list"></div></div></div>
-    
-    <div id="tab-history" class="tab-content">
-        <div class="card"><h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Lịch sử mua hàng</h3><div id="my-history-list"></div></div>
-        <div class="card"><h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Lịch sử dòng tiền (Biến động số dư)</h3><div id="my-tx-list"></div></div>
+    <!-- TAB CỬA HÀNG -->
+    <div id="tab-shop" class="tab-content">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h3 style="margin:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Danh mục sản phẩm</h3>
+                <button class="btn-action" style="background:#2a1545; border:1px solid var(--accent-color);" onclick="_0x5a1b('modal_cart')">🛒 Giỏ (<span id="cart-count">0</span>)</button>
+            </div>
+            <div id="product-list"></div>
+        </div>
     </div>
 
+    <!-- TAB LỊCH SỬ -->
+    <div id="tab-history" class="tab-content">
+        <div class="card">
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Lịch sử mua hàng</h3>
+            <div id="my-history-list"></div>
+        </div>
+        <div class="card">
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Lịch sử dòng tiền (Biến động số dư)</h3>
+            <div id="my-tx-list"></div>
+        </div>
+    </div>
+
+    <!-- TAB ADMIN -->
     <div id="tab-admin" class="tab-content">
         <div class="card" id="admin-card-menu" style="display:none; border-color:var(--danger-color);">
             <h3 style="margin-top:0; font-size:16px; color:var(--danger-color); font-family:'Creepster', cursive;">👑 Khu vực quản trị tối cao</h3>
-            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">1. Nạp Tiền Trực Tiếp</h4>
-            <input type="text" id="admin-topup-user" class="modal-input" placeholder="Tài khoản (VD: admin)"><input type="number" id="admin-topup-amount" class="modal-input" placeholder="Số tiền (VNĐ)"><button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="_0x5a1b('adm_topup')">Xác nhận nạp</button>
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">2. Tạo Tài Khoản</h4>
-            <input type="text" id="admin-new-u" class="modal-input" placeholder="User"><input type="text" id="admin-new-p" class="modal-input" placeholder="Pass"><button class="btn-action" style="margin-top:4px;" onclick="_0x5a1b('adm_create')">Tạo</button>
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">3. Ban Tài Khoản</h4>
-            <input type="text" id="admin-ban-u" class="modal-input" placeholder="User cần ban"><button class="btn-action" style="background:var(--danger-color); color:#fff; margin-top:4px;" onclick="_0x5a1b('adm_ban')">Ban</button>
-            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">4. Duyệt Nạp & Quản Lý Kho</h4>
+            
+            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">1. Nạp Tiền Trực Tiếp Cho Tài Khoản (@username)</h4>
+            <input type="text" id="admin-topup-user" class="modal-input" placeholder="Tên tài khoản cần nạp (VD: admin)">
+            <input type="number" id="admin-topup-amount" class="modal-input" placeholder="Số tiền nạp (VNĐ)">
+            <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="_0x5a1b('adm_topup')">Xác nhận nạp tiền</button>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">2. Tạo Tài Khoản Mới</h4>
+            <input type="text" id="admin-new-u" class="modal-input" placeholder="Tên đăng nhập">
+            <input type="text" id="admin-new-p" class="modal-input" placeholder="Mật khẩu">
+            <button class="btn-action" style="margin-top:4px;" onclick="_0x5a1b('adm_create')">Khởi tạo tài khoản</button>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">3. Ban / Khóa Tài Khoản</h4>
+            <input type="text" id="admin-ban-u" class="modal-input" placeholder="Tên tài khoản cần ban">
+            <button class="btn-action" style="background:var(--danger-color); color:#fff; margin-top:4px;" onclick="_0x5a1b('adm_ban')">Ban tài khoản</button>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">4. Duyệt Yêu Cầu Nạp Tiền & Kho Hàng</h4>
             <div id="admin-pending-deposits"></div>
-            <input type="text" id="admin-prod-name" class="modal-input" placeholder="Tên SP"><input type="number" id="admin-prod-price" class="modal-input" placeholder="Giá"><textarea id="admin-prod-stock" class="modal-input" placeholder="List acc (mỗi dòng 1 acc)" style="height:60px;"></textarea><button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="_0x5a1b('adm_add_prod')">Đăng bán</button>
-            <div id="admin-product-manage-list" style="margin-top:10px;"></div>
+            <input type="text" id="admin-prod-name" class="modal-input" placeholder="Tên sản phẩm">
+            <input type="number" id="admin-prod-price" class="modal-input" placeholder="Giá tiền">
+            <textarea id="admin-prod-stock" class="modal-input" placeholder="Danh sách tài khoản (mỗi dòng 1 acc)" style="height:60px;"></textarea>
+            <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="_0x5a1b('adm_add_prod')">Đăng bán sản phẩm</button>
         </div>
     </div>
 </div>
 
-<div id="deposit-modal" class="modal"><div class="modal-content text-center"><h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Nạp Tiền QR</h3><img src="https://api.vietqr.io/image/970436-123456789-Q9b3x8f.jpg?accountName=ANH%20STORE&amount=0&addInfo=NAP" alt="QR" style="width:140px; height:140px; background:#fff; padding:6px; border-radius:8px; margin:0 auto 10px auto; display:block;"><p style="font-size:11px; color:var(--gold-color);">Nội dung: <b id="qr-transfer-content">NAP</b></p><input type="number" id="dep-amount" class="modal-input" placeholder="Số tiền"><div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px;"><button class="btn-action" style="background:#374151;" onclick="_0x5a1b('close_dep')">Đóng</button><button class="btn-action" onclick="_0x5a1b('submit_dep')">Gửi duyệt</button></div></div></div>
+<!-- MODAL NẠP TIỀN KÈM QR CHUYỂN KHOẢN -->
+<div id="deposit-modal" class="modal">
+    <div class="modal-content text-center">
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Nạp Tiền Qua QR Chuyển Khoản</h3>
+        <p style="font-size:11px; color:var(--text-sub); margin-bottom:10px;">Quét mã QR bên dưới để chuyển khoản tự động:</p>
+        
+        <img src="https://api.vietqr.io/image/970436-123456789-Q9b3x8f.jpg?accountName=ANH%20STORE&amount=0&addInfo=NAP" alt="QR Nạp Tiền" style="width:160px; height:160px; background:#fff; padding:6px; border-radius:8px; margin:0 auto 10px auto; display:block;">
+        
+        <p style="font-size:11px; color:var(--gold-color); margin-bottom:10px;">Nội dung chuyển khoản: <b id="qr-transfer-content">NAP [Tên tài khoản]</b></p>
+        
+        <input type="number" id="dep-amount" class="modal-input" placeholder="Nhập số tiền đã chuyển (VNĐ)">
+        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px;">
+            <button class="btn-action" style="background:#374151;" onclick="_0x5a1b('close_dep')">Đóng</button>
+            <button class="btn-action" onclick="_0x5a1b('submit_dep')">Đã chuyển khoản, Gửi duyệt</button>
+        </div>
+    </div>
+</div>
 
-<div id="vip-modal" class="modal"><div class="modal-content text-center"><h3 style="font-family:'Creepster', cursive; color:var(--gold-color);">⭐ Nâng Cấp VIP ⭐</h3><button class="btn-action" style="background:var(--silver-color); color:#000; width:100%; margin-bottom:10px;" onclick="_0x5a1b('vip_s')">VIP Bạc (50k - Giảm 10%)</button><button class="btn-action" style="background:var(--gold-color); color:#000; width:100%; margin-bottom:10px;" onclick="_0x5a1b('vip_g')">VIP Vàng (100k - Giảm 20%)</button><button class="btn-action" style="background:#374151; width:100%;" onclick="_0x5a1b('close_vip')">Đóng</button></div></div>
+<!-- MODAL MUA VIP -->
+<div id="vip-modal" class="modal">
+    <div class="modal-content text-center">
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--gold-color);">⭐ Nâng Cấp Gói VIP ⭐</h3>
+        <p style="font-size:11px; color:var(--text-sub); margin-bottom:15px;">Chọn cấp độ VIP để nhận đặc quyền giảm giá độc quyền:</p>
+        
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid var(--silver-color);">
+            <b style="color:var(--silver-color); font-size:14px;">Gói VIP Bạc (50.000đ)</b><br>
+            <small style="color:var(--success-color);">✨ Giảm ngay 10% mọi đơn hàng!</small><br>
+            <button class="btn-action" style="background:var(--silver-color); color:#000; margin-top:6px;" onclick="_0x5a1b('vip_s')">Nâng Cấp VIP Bạc</button>
+        </div>
 
-<div id="cart-modal" class="modal"><div class="modal-content"><h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Giỏ hàng</h3><div id="cart-items-list" style="max-height:150px; overflow-y:auto; margin-bottom:8px;"></div><div id="vip-discount-notice" style="font-size:11px; color:var(--success-color); font-weight:bold;"></div><div style="font-size:13px; font-weight:bold; margin:10px 0;">Tổng: <span id="cart-total-price" style="color:var(--success-color);">0đ</span></div><div style="display:flex; justify-content:flex-end; gap:6px;"><button class="btn-action" style="background:#374151;" onclick="_0x5a1b('close_cart')">Đóng</button><button class="btn-action" onclick="_0x5a1b('checkout')">Thanh toán</button></div></div></div>
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:12px; border:1px solid var(--gold-color);">
+            <b style="color:var(--gold-color); font-size:14px;">Gói VIP Vàng (100.000đ)</b><br>
+            <small style="color:var(--success-color);">🔥 Giảm ngay 20% mọi đơn hàng!</small><br>
+            <button class="btn-action" style="background:var(--gold-color); color:#000; margin-top:6px;" onclick="_0x5a1b('vip_g')">Nâng Cấp VIP Vàng</button>
+        </div>
+
+        <button class="btn-action" style="background:#374151; width:100%;" onclick="_0x5a1b('close_vip')">Đóng</button>
+    </div>
+</div>
+
+<!-- MODAL GIỎ HÀNG -->
+<div id="cart-modal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Giỏ hàng</h3>
+        <div id="cart-items-list" style="max-height:150px; overflow-y:auto; margin-bottom:8px;"></div>
+        <div id="vip-discount-notice" style="font-size:11px; color:var(--success-color); margin-bottom:6px; font-weight:bold;"></div>
+        <div style="font-size:13px; font-weight:bold; margin-bottom:10px;">Tổng thanh toán: <span id="cart-total-price" style="color:var(--success-color);">0đ</span></div>
+        <div style="display:flex; justify-content:flex-end; gap:6px;">
+            <button class="btn-action" style="background:#374151;" onclick="_0x5a1b('close_cart')">Đóng</button>
+            <button class="btn-action" onclick="_0x5a1b('checkout')">Thanh toán</button>
+        </div>
+    </div>
+</div>
 
 <div class="ghost-decor">👻</div>
-<div class="bottom-nav"><button class="nav-item active" onclick="_0x5a1b('tab_home')">Trang chủ</button><button class="nav-item" onclick="_0x5a1b('tab_shop')">Cửa hàng</button><button class="nav-item" onclick="_0x5a1b('tab_history')">Lịch sử</button><button class="nav-item" onclick="_0x5a1b('tab_admin')" id="nav-admin-btn" style="display:none;">Quản trị</button></div>
+
+<div class="bottom-nav">
+    <button class="nav-item active" onclick="_0x5a1b('tab_home')">Trang chủ</button>
+    <button class="nav-item" onclick="_0x5a1b('tab_shop')">Cửa hàng</button>
+    <button class="nav-item" onclick="_0x5a1b('tab_history')">Lịch sử</button>
+    <button class="nav-item" onclick="_0x5a1b('tab_admin')" id="nav-admin-btn" style="display:none;">Quản trị</button>
+</div>
 
 <script>
-const _0x3b82=['log','getItem','setItem','removeItem','parse','stringify','fetch','JSON','body','then','json','success','reload','querySelector','getElementById','style','display','value','trim','length','alert','preventDefault','key','toLowerCase','ctrlKey','shiftKey','outerWidth','innerWidth','outerHeight','innerHeight'];(function(_0x12a862,_0x3f12a3){const _0x539162=function(_0x431182){while(--_0x431182){_0x12a862['push'](_0x12a862['shift']());}};_0x539162(++_0x3f12a3);}(_0x3b82,0x1b4));
-(function(){document.addEventListener("contextmenu",e=>e.preventDefault());document.addEventListener("keydown",e=>{const k=e['key']['toLowerCase']();if(e['key']==="F12"||(e['ctrlKey']&&e['shiftKey']&&["i","j","c"]['includes'](k))||(e['ctrlKey']&&k==="u")){e['preventDefault']();localStorage['removeItem']("pro_curr");location['reload']();return false;}});setInterval(()=>{if(window['outerWidth']-window['innerWidth']>160||window['outerHeight']-window['innerHeight']>160){localStorage['removeItem']("pro_curr");location['reload']();}},1000);})();
+const _0x3b82=['getItem','setItem','removeItem','parse','stringify','fetch','JSON','body','then','json','success','reload','querySelector','getElementById','style','display','value','trim','length','alert','preventDefault','key','toLowerCase','ctrlKey','shiftKey','outerWidth','innerWidth','outerHeight','innerHeight'];(function(_0x12a862,_0x3f12a3){const _0x539162=function(_0x431182){while(--_0x431182){_0x12a862['push'](_0x12a862['shift']());}};_0x539162(++_0x3f12a3);}(_0x3b82,0x1b4));
 
-let current=JSON['parse'](localStorage['getItem']("pro_curr")||"null");
-let cart=JSON['parse'](localStorage['getItem']("pro_cart")||"[]");
-let savedBanner=localStorage['getItem']("pro_banner")||'👻 HALLOWEEN FLASH SALE: Nhập mã giảm giá đặc biệt! 🦇';
-document['getElementById']("display-marquee-text").innerText=savedBanner;
-if(current)initApp(current);
+(function(){
+    document.addEventListener("contextmenu", e => e.preventDefault());
+    document.addEventListener("keydown", function(e){
+        const k = e.key.toLowerCase();
+        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(k)) || (e.ctrlKey && k === "u")) {
+            e.preventDefault();
+            localStorage.removeItem("pro_curr");
+            location.reload();
+            return false;
+        }
+    });
+    setInterval(() => {
+        if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+            localStorage.removeItem("pro_curr");
+            location.reload();
+        }
+    }, 1000);
+})();
 
-function showToast(msg){let t=document['getElementById']("toast");t['innerText']=msg;t['classList']['add']("show");setTimeout(()=>t['classList']['remove']("show"),2500);}
-function toggleTheme(){document['body']['classList']['toggle']("light-mode");}
-function closeModal(id){document['getElementById'](id)['style']['display']="none";}
+let current = JSON.parse(localStorage.getItem("pro_curr") || "null");
+let cart = JSON.parse(localStorage.getItem("pro_cart") || "[]");
+let savedBanner = localStorage.getItem("pro_banner") || '👻 HALLOWEEN FLASH SALE: Nhập mã giảm giá đặc biệt! 🦇';
+document.getElementById("display-marquee-text").innerText = savedBanner;
+
+if (current) initApp(current);
+
+function showToast(msg) {
+    let t = document.getElementById("toast");
+    t.innerText = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+function toggleTheme() {
+    document.body.classList.toggle("light-mode");
+}
+
+function closeModal(id) { 
+    document.getElementById(id).style.display = "none"; 
+}
 
 function _0x5a1b(action){
     if(action==='login'){
-        let username=document['getElementById']("auth-u")['value']['trim']();
-        let password=document['getElementById']("auth-p")['value']['trim']();
-        let otpToken=document['getElementById']("auth-otp")?document['getElementById']("auth-otp")['value']['trim']():"";
-        fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({username,password,otpToken})})
-        .then(res=>res['json']()).then(data=>{
-            if(data['require2FA']){document['getElementById']("otp-group")['style']['display']="block";showToast(data['message']);return;}
-            if(data['success']){localStorage['setItem']("pro_curr",JSON['stringify'](data['user']));initApp(data['user']);showToast("Đăng nhập thành công!");}
-            else{alert(data['message']||"Sai thông tin!");}
+        let username = document.getElementById("auth-u").value.trim();
+        let password = document.getElementById("auth-p").value.trim();
+        let otpToken = document.getElementById("auth-otp") ? document.getElementById("auth-otp").value.trim() : "";
+
+        fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, otpToken })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.require2FA) {
+                document.getElementById("otp-group").style.display = "block";
+                showToast(data.message || "Vui lòng nhập mã Google Authenticator!");
+                return;
+            }
+            if (data.success) {
+                localStorage.setItem("pro_curr", JSON.stringify(data.user));
+                initApp(data.user);
+                showToast("Đăng nhập thành công!");
+            } else {
+                alert(data.message || "Sai tên đăng nhập hoặc mật khẩu!");
+            }
+        }).catch(err => {
+            alert("Lỗi kết nối server!");
         });
-    }else if(action==='logout'){localStorage['removeItem']("pro_curr");location['reload']();
-    }else if(action==='modal_dep'){document['getElementById']("deposit-modal")['style']['display']="flex";if(current)document['getElementById']("qr-transfer-content").innerText=`NAP ${current['username']}`;}
-    else if(action==='close_dep'){closeModal('deposit-modal');}
-    else if(action==='modal_vip'){document['getElementById']("vip-modal")['style']['display']="flex";}
-    else if(action==='close_vip'){closeModal('vip-modal');}
-    else if(action==='modal_cart'){document['getElementById']("cart-modal")['style']['display']="flex";}
-    else if(action==='close_cart'){closeModal('cart-modal');}
-    else if(action==='theme'){toggleTheme();}
-    else if(action==='setup_2fa'){
-        fetch('/api/2fa/setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({username:current['username']})})
-        .then(res=>res['json']()).then(data=>{if(data['success']){document['getElementById']("qr-code-img")['src']=data['qrCodeUrl'];document['getElementById']("2fa-setup-container")['style']['display']="block";document['getElementById']("btn-toggle-2fa")['style']['display']="none";showToast("Đã tạo mã QR 2FA!");}});
-    }else if(action==='verify_2fa'){
-        let token=document['getElementById']("verify-otp-input")['value']['trim']();
-        fetch('/api/2fa/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({username:current['username'],token})})
-        .then(res=>res['json']()).then(data=>{if(data['success']){showToast("Đã bật 2FA!");current['twoFactorEnabled']=true;localStorage['setItem']("pro_curr",JSON['stringify'](current));initApp(current);}});
-    }else if(action==='vip_s'){buyVipPackage('silver',50000);}
-    else if(action==='vip_g'){buyVipPackage('gold',100000);}
-    else if(action==='submit_dep'){submitDeposit();}
-    else if(action==='adm_topup'){adminDirectTopup();}
-    else if(action==='adm_create'){adminCreateUser();}
-    else if(action==='adm_ban'){adminBanUser();}
-    else if(action==='adm_add_prod'){addNewProduct();}
-    else if(action==='tab_home'){switchTab('tab-home');}
-    else if(action==='tab_shop'){switchTab('tab-shop');}
-    else if(action==='tab_history'){switchTab('tab-history');}
-    else if(action==='tab_admin'){switchTab('tab-admin');}
-    else if(action==='checkout'){checkoutCart();}
+    } else if(action==='logout'){
+        localStorage.removeItem("pro_curr");
+        location.reload();
+    } else if(action==='modal_dep'){
+        document.getElementById("deposit-modal").style.display = "flex"; 
+        if(current) {
+            document.getElementById("qr-transfer-content").innerText = `NAP ${current.username}`;
+        }
+    } else if(action==='close_dep'){
+        closeModal('deposit-modal');
+    } else if(action==='modal_vip'){
+        document.getElementById("vip-modal").style.display = "flex";
+    } else if(action==='close_vip'){
+        closeModal('vip-modal');
+    } else if(action==='modal_cart'){
+        document.getElementById("cart-modal").style.display = "flex";
+    } else if(action==='close_cart'){
+        closeModal('cart-modal');
+    } else if(action==='theme'){
+        toggleTheme();
+    } else if(action==='setup_2fa'){
+        setup2FA();
+    } else if(action==='verify_2fa'){
+        verifyAndEnable2FA();
+    } else if(action==='vip_s'){
+        buyVipPackage('silver', 50000);
+    } else if(action==='vip_g'){
+        buyVipPackage('gold', 100000);
+    } else if(action==='submit_dep'){
+        submitDeposit();
+    } else if(action==='adm_topup'){
+        adminDirectTopup();
+    } else if(action==='adm_create'){
+        adminCreateUser();
+    } else if(action==='adm_ban'){
+        adminBanUser();
+    } else if(action==='adm_add_prod'){
+        addNewProduct();
+    } else if(action==='tab_home'){
+        switchTab('tab-home');
+    } else if(action==='tab_shop'){
+        switchTab('tab-shop');
+    } else if(action==='tab_history'){
+        switchTab('tab-history');
+    } else if(action==='tab_admin'){
+        switchTab('tab-admin');
+    } else if(action==='checkout'){
+        checkoutCart();
+    }
 }
 
-function switchTab(id){
-    document['querySelectorAll']('.tab-content')['forEach'](el=>el['classList']['remove']('active'));
-    document['querySelectorAll']('.nav-item')['forEach'](el=>el['classList']['remove']('active'));
-    document['getElementById'](id)['classList']['add']('active');
-}
-
-function initApp(acc){
-    current=acc;
-    document['getElementById']("auth-screen")['style']['display']="none";
-    document['getElementById']("acc-username-display").innerText=`Tài khoản: @${current['username']}`;
-    document['getElementById']("acc-role-display").innerText=`Quyền: ${current['role']==='admin'?'Quản trị':'Thành viên'}`;
-    document['getElementById']("user-balance").innerText=parseInt(current['balance']||0)['toLocaleString']()+"đ";
-    if(current['twoFactorEnabled']){document['getElementById']("status-2fa").innerText="Trạng thái: Đang bật";document['getElementById']("btn-toggle-2fa")['style']['display']="none";}
-    let vipSpan=document['getElementById']("vip-badge-span");
-    if(current['vip']==='gold'){vipSpan['style']['display']="inline-block";vipSpan['className']="badge-vip-gold";vipSpan['innerText']="VIP VÀNG (-20%)";}
-    else if(current['vip']==='silver'){vipSpan['style']['display']="inline-block";vipSpan['className']="badge-vip-silver";vipSpan['innerText']="VIP BẠC (-10%)";}
-    if(current['role']==='admin'){document['getElementById']("admin-badge-span")['style']['display']="inline-block";document['getElementById']("nav-admin-btn")['style']['display']="block";document['getElementById']("admin-card-menu")['style']['display']="block";renderAdminLists();}
-    renderShop();renderHistory();updateCartUI();
-}
-
-async function fetchAPI(key){try{let res=await fetch(`/api/db/${key}`);let data=await res['json']();return data['data']||[];}catch(e){return[];}}
-
-async function renderShop(){
-    let products=await fetchAPI("prods");
-    let container=document['getElementById']("product-list");
-    let html="";
-    products['forEach']((prod,index)=>{
-        let stockCount=prod['stock']?prod['stock']['split']('\n')['filter'](x=>x['trim']())['length']:0;
-        html+=`<div class="product-item"><div><b>${prod['name']}</b><br><small style="color:var(--text-sub);">Giá: ${prod['price']['toLocaleString']}đ \vert{} Kho: ${stockCount}</small></div><div style="display:flex; gap:6px;"><button class="btn-action" style="background:#2a1545; border:1px solid var(--accent-color);" onclick="addToCart(${index})">Thêm</button><button class="btn-action" onclick="buyNowDirect(${index})">Mua</button></div></div>`;
+function setup2FA() {
+    fetch('/api/2fa/setup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: current.username})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById("qr-code-img").src = data.qrCodeUrl;
+            document.getElementById("2fa-setup-container").style.display = "block";
+            document.getElementById("btn-toggle-2fa").style.display = "none";
+            showToast("Đã tạo mã QR 2FA!");
+        } else {
+            alert(data.message || "Không thể khởi tạo 2FA.");
+        }
     });
-    container['innerHTML']=html||"<p style='color:var(--text-sub); text-align:center;'>Chưa có sản phẩm.</p>";
 }
 
-async function addToCart(index){
-    let products=await fetchAPI("prods");
-    let prod=products[index];
-    let exist=cart['find'](x=>x['id']===prod['id']);
-    if(exist){exist['qty']+=1;}else{cart['push']({...prod,qty:1,originalIndex:index});}
-    localStorage['setItem']("pro_cart",JSON['stringify'](cart));updateCartUI();showToast("Đã thêm vào giỏ!");
-}
-
-async function buyNowDirect(index){
-    let products=await fetchAPI("prods");let prod=products[index];
-    cart=[{...prod,qty:1,originalIndex:index}];
-    localStorage['setItem']("pro_cart",JSON['stringify'](cart));updateCartUI();document['getElementById']("cart-modal")['style']['display']="flex";
-}
-
-function updateCartUI(){
-    document['getElementById']("cart-count").innerText=cart['reduce']((a,b)=>a+b['qty'],0);
-    let list=document['getElementById']("cart-items-list");let html="";let total=0;
-    cart['forEach']((item,idx)=>{
-        let sub=item['price']*item['qty'];total+=sub;
-        html+=`<div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;"><div><b>${item['name']}</b> x${item['qty']}</div><div>${sub['toLocaleString']}đ <button style="background:none; border:none; color:var(--danger-color); cursor:pointer;" onclick="removeFromCart(${idx})">✕</button></div></div>`;
+function verifyAndEnable2FA() {
+    let token = document.getElementById("verify-otp-input").value.trim();
+    if (!token || token.length !== 6) {
+        alert("Vui lòng nhập mã OTP 6 số hợp lệ!");
+        return;
+    }
+    fetch('/api/2fa/verify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: current.username, token})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast("Đã bật 2FA thành công!");
+            current.twoFactorEnabled = true;
+            localStorage.setItem("pro_curr", JSON.stringify(current));
+            initApp(current);
+        } else {
+            alert(data.message || "Mã OTP không chính xác!");
+        }
     });
-    list['innerHTML']=html||"<p style='font-size:11px; color:var(--text-sub);'>Giỏ hàng trống</p>";
-    let vipDiscount=0;let noticeEl=document['getElementById']("vip-discount-notice");
-    if(current&&current['vip']==='silver'){vipDiscount=0.10;noticeEl['innerText']="⭐ Giảm 10% VIP Bạc";}
-    else if(current&&current['vip']==='gold'){vipDiscount=0.20;noticeEl['innerText']="⭐ Giảm 20% VIP Vàng";}
-    else{noticeEl['innerText']="";}
-    let finalPrice=total*(1-vipDiscount);
-    document['getElementById']("cart-total-price").innerText=finalPrice['toLocaleString']()+"đ";
 }
 
-function removeFromCart(idx){cart['splice'](idx,1);localStorage['setItem']("pro_cart",JSON['stringify'](cart));updateCartUI();}
-async function checkoutCart(){if(cart['length']===0){alert("Giỏ hàng trống!");return;}alert("Thanh toán thành công!");cart=[];localStorage['removeItem']("pro_cart");updateCartUI();closeModal('cart-modal');renderShop();}
+function initApp(acc) {
+    current = acc;
+    document.getElementById("auth-screen").style.display = "none";
+    document.getElementById("acc-username-display").innerText = `Tài khoản: @${current.username}`;
+    document.getElementById("acc-role-display").innerText = `Quyền hạn: ${current.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}`;
+    document.getElementById("user-balance").innerText = parseInt(current.balance || 0).toLocaleString() + "đ";
 
-async function renderHistory(){
-    let history=await fetchAPI("history");
-    let myHist=history['filter'](x=>x['username']===current['username']);
-    document['getElementById']("my-history-list')['innerHTML']=myHist['map'](h=>`<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${h['time']}] Mua${h['name']}</div>')['join('')']||"<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử</p>";
-    let txs=await fetchAPI("txs");
-    let myTxs=txs['filter'](x=>x['username']===current['username']);
-    document['getElementById']("my-tx-list')['innerHTML']=myTxs['map'](t=>`<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${t['time']}] ${t['desc']}: <b style="color:var(--success-color);">+${t['amount']['toLocaleString']}đ</b></div>')['join('')']||"<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử dòng tiền</p>";
+    if (current.twoFactorEnabled) {
+        document.getElementById("status-2fa").innerText = "Trạng thái: Đang bật (Đã bảo vệ)";
+        document.getElementById("btn-toggle-2fa").style.display = "none";
+    }
+
+    let vipSpan = document.getElementById("vip-badge-span");
+    if (current.vip === 'gold') {
+        vipSpan.style.display = "inline-block";
+        vipSpan.className = "badge-vip-gold";
+        vipSpan.innerText = "VIP VÀNG (-20%)";
+    } else if (current.vip === 'silver') {
+        vipSpan.style.display = "inline-block";
+        vipSpan.className = "badge-vip-silver";
+        vipSpan.innerText = "VIP BẠC (-10%)";
+    }
+
+    if (current.role === 'admin') {
+        document.getElementById("admin-badge-span").style.display = "inline-block";
+        document.getElementById("nav-admin-btn").style.display = "block";
+        document.getElementById("admin-card-menu").style.display = "block";
+        renderAdminLists();
+    } else {
+        document.getElementById("nav-admin-btn").style.display = "none";
+    }
+
+    renderShop();
+    renderHistory();
+    updateCartUI();
 }
 
-async function submitDeposit(){
-    let amount=document['getElementById']("dep-amount")['value'];
-    if(!amount||amount<=0){alert("Nhập số tiền hợp lệ!");return;}
-    let res=await(await fetch('/api/deposit/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({username:current['username'],amount})}))['json']();
-    if(res['success']){showToast("Đã gửi yêu cầu nạp tiền chờ duyệt!");closeModal('deposit-modal');document['getElementById']("dep-amount")['value']="";}else{alert(res['message']);}
+function switchTab(id) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
 }
 
-async function renderAdminLists(){
-    let pending=await fetchAPI("pending_deposits");
-    document['getElementById']("admin-pending-deposits")['innerHTML']=pending['map']((p,idx)=>`<div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:6px;"><div><b>@${p['username']}</b> nạp <b>${p['amount']['toLocaleString']}đ</b></div><div style="display:flex; gap:6px;"><button class="btn-action" style="padding:3px 8px; background:var(--success-color); color:#000;" onclick="approveDeposit(${idx})">Duyệt</button><button class="btn-action" style="padding:3px 8px; background:var(--danger-color); color:#fff;" onclick="rejectDeposit(${idx})">Xóa</button></div></div>')['join('')']||"<p style='font-size:11px; color:var(--text-sub);'>Không có yêu cầu nạp.</p>";
+async function buyVipPackage(type, price) {
+    let currentBal = current.balance || 0;
+    if (currentBal < price) {
+        alert("Số dư tài khoản không đủ để nâng cấp gói VIP này!");
+        return;
+    }
+    current.balance = currentBal - price;
+    current.vip = type;
+    localStorage.setItem("pro_curr", JSON.stringify(current));
+    showToast(`Nâng cấp thành công gói VIP ${type.toUpperCase()}!`);
+    closeModal('vip-modal');
+    initApp(current);
 }
 
-async function approveDeposit(index){
-    let res=await(await fetch('/api/admin/approve-deposit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({adminUsername:current['username'],index})}))['json']();
-    if(res['success']){showToast("Đã duyệt nạp tiền!");renderAdminLists();}else{alert(res['message']);}
+async function adminDirectTopup() {
+    let username = document.getElementById("admin-topup-user").value.trim();
+    let amount = parseInt(document.getElementById("admin-topup-amount").value);
+    if (!username || !amount || amount <= 0) {
+        alert("Vui lòng điền đủ tên tài khoản và số tiền hợp lệ!");
+        return;
+    }
+    let res = await (await fetch('/api/admin/edit-balance', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, targetUsername: username, amount, type: 'add'})
+    })).json();
+
+    if (res.success) {
+        showToast(`Đã nạp ${amount.toLocaleString()}đ cho tài khoản @${username}!`);
+        document.getElementById("admin-topup-user").value = "";
+        document.getElementById("admin-topup-amount").value = "";
+    } else {
+        alert(res.message || "Không thể thực hiện nạp tiền.");
+    }
 }
-async function rejectDeposit(index){
-    let res=await(await fetch('/api/admin/reject-deposit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({adminUsername:current['username'],index})}))['json']();
-    if(res['success']){showToast("Đã xóa yêu cầu!");renderAdminLists();}
+
+async function adminBanUser() {
+    let targetUsername = document.getElementById("admin-ban-u").value.trim();
+    if (!targetUsername) { alert("Nhập tên tài khoản cần ban!"); return; }
+    let res = await (await fetch('/api/admin/delete-user', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, targetUsername})
+    })).json();
+
+    if (res.success) {
+        showToast(`Đã ban thành công tài khoản @${targetUsername}`);
+        document.getElementById("admin-ban-u").value = "";
+    } else {
+        alert(res.message || "Không thể ban tài khoản này.");
+    }
 }
-async function buyVipPackage(type,price){
-    if(current['balance']<price){alert("Số dư không đủ!");return;}
-    current['balance']-=price;current['vip']=type;
-    localStorage['setItem']("pro_curr",JSON['stringify'](current));showToast("Nâng cấp VIP thành công!");closeModal('vip-modal');initApp(current);
+
+async function adminCreateUser() {
+    let newUsername = document.getElementById("admin-new-u").value.trim();
+    let newPassword = document.getElementById("admin-new-p").value.trim();
+    if (!newUsername || !newPassword) { alert("Nhập đủ tên và mật khẩu!"); return; }
+    let res = await (await fetch('/api/admin/create-user', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, newUsername, newPassword})
+    })).json();
+
+    if (res.success) {
+        showToast("Tạo tài khoản mới thành công!");
+        document.getElementById("admin-new-u").value = "";
+        document.getElementById("admin-new-p").value = "";
+    } else {
+        alert(res.message);
+    }
 }
-async function adminDirectTopup(){
-    let username=document['getElementById']("admin-topup-user")['value']['trim']();
-    let amount=parseInt(document['getElementById']("admin-topup-amount")['value']);
-    let res=await(await fetch('/api/admin/edit-balance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({adminUsername:current['username'],targetUsername:username,amount,type:'add'})}))['json']();
-    if(res['success']){showToast("Nạp tiền thành công!");}else{alert(res['message']);}
+
+async function fetchAPI(key) {
+    try {
+        let res = await fetch(`/api/db/${key}`);
+        let data = await res.json();
+        return data.data || [];
+    } catch(e) { return []; }
 }
-async function adminCreateUser(){
-    let newUsername=document['getElementById']("admin-new-u")['value']['trim']();let newPassword=document['getElementById']("admin-new-p")['value']['trim']();
-    let res=await(await fetch('/api/admin/create-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({adminUsername:current['username'],newUsername,newPassword})}))['json']();
-    if(res['success']){showToast("Tạo user thành công!");}else{alert(res['message']);}
+
+async function renderShop() {
+    let products = await fetchAPI("prods");
+    let container = document.getElementById("product-list");
+    let html = "";
+    products.forEach((prod, index) => {
+        let stockCount = prod.stock ? prod.stock.split('\n').filter(x => x.trim()).length : 0;
+        html += `
+            <div class="product-item">
+                <div>
+                    <b>${prod.name}</b><br>
+                    <small style="color:var(--text-sub);">Giá: ${prod.price.toLocaleString()}đ | Kho: ${stockCount}</small>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-action" style="background:#2a1545; border:1px solid var(--accent-color);" onclick="addToCart(${index})">Thêm</button>
+                    <button class="btn-action" onclick="buyNowDirect(${index})">Mua ngay</button>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html || "<p style='color:var(--text-sub); text-align:center;'>Cửa hàng hiện chưa có sản phẩm nào.</p>";
 }
-async function adminBanUser(){
-    let targetUsername=document['getElementById']("admin-ban-u")['value']['trim']();
-    let res=await(await fetch('/api/admin/delete-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({adminUsername:current['username'],targetUsername})}))['json']();
-    if(res['success']){showToast("Đã ban user!");}else{alert(res['message']);}
+
+async function addToCart(index) {
+    let products = await fetchAPI("prods");
+    let prod = products[index];
+    let exist = cart.find(x => x.id === prod.id);
+    if (exist) { exist.qty += 1; } else { cart.push({ ...prod, qty: 1, originalIndex: index }); }
+    localStorage.setItem("pro_cart", JSON.stringify(cart));
+    updateCartUI();
+    showToast("Đã thêm vào giỏ hàng!");
 }
-async function addNewProduct(){
-    let name=document['getElementById']("admin-prod-name")['value']['trim']();let price=document['getElementById']("admin-prod-price")['value'];let stock=document['getElementById']("admin-prod-stock")['value']['trim']();
-    let res=await(await fetch('/api/admin/add-product',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON['stringify']({adminUsername:current['username'],name,price,stock})}))['json']();
-    if(res['success']){showToast("Thêm sản phẩm thành công!");renderShop();renderAdminLists();}else{alert(res['message']);}
+
+async function buyNowDirect(index) {
+    let products = await fetchAPI("prods");
+    let prod = products[index];
+    cart = [{ ...prod, qty: 1, originalIndex: index }];
+    localStorage.setItem("pro_cart", JSON.stringify(cart));
+    updateCartUI();
+    _0x5a1b('modal_cart');
+}
+
+function updateCartUI() {
+    document.getElementById("cart-count").innerText = cart.reduce((a, b) => a + b.qty, 0);
+    let list = document.getElementById("cart-items-list");
+    let html = "";
+    let total = 0;
+    cart.forEach((item, idx) => {
+        let sub = item.price * item.qty;
+        total += sub;
+        html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;">
+                <div><b>${item.name}</b> x${item.qty}</div>
+                <div>${sub.toLocaleString()}đ <button style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-weight:bold;" onclick="removeFromCart(${idx})">✕</button></div>
+            </div>
+        `;
+    });
+    list.innerHTML = html || "<p style='font-size:11px; color:var(--text-sub);'>Giỏ hàng trống</p>";
+    
+    let vipDiscount = 0;
+    let noticeEl = document.getElementById("vip-discount-notice");
+    if (current && current.vip === 'silver') {
+        vipDiscount = 0.10;
+        noticeEl.innerText = "⭐ Đã áp dụng đặc quyền VIP Bạc: Giảm 10%";
+    } else if (current && current.vip === 'gold') {
+        vipDiscount = 0.20;
+        noticeEl.innerText = "⭐ Đã áp dụng đặc quyền VIP Vàng: Giảm 20%";
+    } else {
+        noticeEl.innerText = "";
+    }
+
+    let finalPrice = total * (1 - vipDiscount);
+    document.getElementById("cart-total-price").innerText = finalPrice.toLocaleString() + "đ";
+}
+
+function removeFromCart(idx) {
+    cart.splice(idx, 1);
+    localStorage.setItem("pro_cart", JSON.stringify(cart));
+    updateCartUI();
+}
+
+async function checkoutCart() {
+    if (cart.length === 0) { alert("Giỏ hàng trống!"); return; }
+    alert("Thanh toán thành công qua hệ thống bảo mật!");
+    cart = [];
+    localStorage.removeItem("pro_cart");
+    updateCartUI();
+    closeModal('cart-modal');
+    renderShop();
+}
+
+async function renderHistory() {
+    let history = await fetchAPI("history");
+    let myHist = history.filter(x => x.username === current.username);
+    document.getElementById("my-history-list").innerHTML = myHist.map(h => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${h.time}] Mua ${h.name}</div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử</p>";
+
+    let txs = await fetchAPI("txs");
+    let myTxs = txs.filter(x => x.username === current.username);
+    document.getElementById("my-tx-list").innerHTML = myTxs.map(t => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${t.time}] ${t.desc}: <b style="color:var(--success-color);">+${t.amount.toLocaleString()}đ</b></div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử dòng tiền</p>";
+}
+
+async function submitDeposit() {
+    let amount = document.getElementById("dep-amount").value;
+    if (!amount || amount <= 0) { alert("Nhập số tiền hợp lệ đã chuyển khoản!"); return; }
+    let res = await (await fetch('/api/deposit/submit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: current.username, amount})
+    })).json();
+    if (res.success) { showToast("Đã gửi yêu cầu nạp tiền chờ Admin duyệt!"); closeModal('deposit-modal'); document.getElementById("dep-amount").value = ""; }
+    else alert(res.message);
+}
+
+async function renderAdminLists() {
+    let pending = await fetchAPI("pending_deposits");
+    document.getElementById("admin-pending-deposits").innerHTML = pending.map((p, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:6px;">
+            <div><b>@${p.username}</b> nạp <b>${p.amount.toLocaleString()}đ</b></div>
+            <div style="display:flex; gap:6px;">
+                <button class="btn-action" style="padding:3px 8px; background:var(--success-color); color:#000;" onclick="approveDeposit(${idx})">Duyệt</button>
+                <button class="btn-action" style="padding:3px 8px; background:var(--danger-color); color:#fff;" onclick="rejectDeposit(${idx})">Xóa</button>
+            </div>
+        </div>
+    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Không có yêu cầu nạp tiền.</p>";
+}
+
+async function approveDeposit(index) {
+    let res = await (await fetch('/api/admin/approve-deposit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, index})
+    })).json();
+    if (res.success) { showToast("Đã duyệt nạp tiền!"); renderAdminLists(); } else alert(res.message);
+}
+
+async function rejectDeposit(index) {
+    let res = await (await fetch('/api/admin/reject-deposit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, index})
+    })).json();
+    if (res.success) { showToast("Đã xóa yêu cầu!"); renderAdminLists(); } else alert(res.message);
+}
+
+async function addNewProduct() {
+    let name = document.getElementById("admin-prod-name").value.trim();
+    let price = document.getElementById("admin-prod-price").value;
+    let stock = document.getElementById("admin-prod-stock").value.trim();
+    let res = await (await fetch('/api/admin/add-product', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, name, price, stock})
+    })).json();
+    if (res.success) {
+        showToast("Thêm sản phẩm thành công!");
+        document.getElementById("admin-prod-name").value = "";
+        document.getElementById("admin-prod-price").value = "";
+        document.getElementById("admin-prod-stock").value = "";
+        renderShop();
+        renderAdminLists();
+    } else alert(res.message);
 }
 </script>
+
 </body>
 </html>
