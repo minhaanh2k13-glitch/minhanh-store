@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anh Store - Halloween Security Edition</title>
+    <title>Anh Store - Dynamic Whitelist Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -22,7 +22,7 @@
             --card-bg: #ffffff;
             --text-color: #0f172a;
             --text-sub: #64748b;
-            --accent-color: #d14900;
+            --accent-color: #0284c7;
             --border-color: #cbd5e1;
         }
         body {
@@ -167,7 +167,7 @@
 
 <div class="system-status">
     <div class="status-dot"></div>
-    <span>Halloween Guard Secure</span>
+    <span>Admin Whitelist Panel</span>
 </div>
 
 <div id="toast">Thông báo hệ thống!</div>
@@ -177,13 +177,10 @@
 <div id="auth-screen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-color); z-index:9999; display:flex; justify-content:center; align-items:center; padding:15px; background-image: radial-gradient(circle at 50% 50%, #2e1147 0%, #0b0716 85%);">
     <div class="card" style="width:100%; max-width:340px; text-align:center;">
         <h2 style="font-family:'Creepster', cursive; font-size: 2.8rem; margin-top:0; color:var(--accent-color); text-shadow: 0 0 10px rgba(255,117,24,0.7);">Anh Store</h2>
-        <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">🎃 Cổng đăng nhập hệ thống bảo mật 🎃</p>
-        <input type="text" id="auth-u" class="modal-input" placeholder="Tên đăng nhập">
+        <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">🔒 Yêu cầu ID được cấp phép truy cập 🔒</p>
+        <input type="text" id="auth-u" class="modal-input" placeholder="Tên đăng nhập (ID)">
         <input type="password" id="auth-p" class="modal-input" placeholder="Mật khẩu">
-        <div id="otp-group" style="display:none; margin-top:6px;">
-            <input type="text" id="auth-otp" class="modal-input" placeholder="Mã Google Authenticator (6 số)" maxlength="6">
-        </div>
-        <button class="btn-action" style="width:100%; margin-top:12px; padding:11px;" onclick="handleLogin()">Gia Nhập Đêm Hội</button>
+        <button class="btn-action" style="width:100%; margin-top:12px; padding:11px;" onclick="handleLogin()">Đăng Nhập Hệ Thống</button>
     </div>
 </div>
 
@@ -255,12 +252,19 @@
         </div>
     </div>
 
-    <!-- TAB ADMIN -->
+    <!-- TAB ADMIN (CÓ PHẦN QUẢN LÝ ID WHITELIST TRỰC TIẾP) -->
     <div id="tab-admin" class="tab-content">
         <div class="card" id="admin-card-menu" style="display:none; border-color:var(--danger-color);">
-            <h3 style="margin-top:0; font-size:16px; color:var(--danger-color); font-family:'Creepster', cursive;">👑 Khu vực quản trị</h3>
+            <h3 style="margin-top:0; font-size:16px; color:var(--danger-color); font-family:'Creepster', cursive;">👑 Khu vực quản trị & Cấp phép ID</h3>
             
-            <h4 style="font-size:12px; margin:8px 0 4px 0; color:var(--accent-color);">Chỉnh sửa Banner Chạy (Marquee)</h4>
+            <h4 style="font-size:12px; margin:8px 0 4px 0; color:var(--accent-color);">Quản lý ID/Username Whitelist Được Phép Truy Cập</h4>
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+                <input type="text" id="admin-new-whitelist-id" class="modal-input" placeholder="Nhập ID/Username mới cần cấp phép" style="margin:0;">
+                <button class="btn-action" style="background:var(--success-color); color:#000; white-space:nowrap;" onclick="addWhitelistID()">Thêm ID</button>
+            </div>
+            <div id="admin-whitelist-display-list" style="max-height:120px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:12px;"></div>
+
+            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Chỉnh sửa Banner Chạy (Marquee)</h4>
             <input type="text" id="admin-banner-input" class="modal-input" placeholder="Nội dung banner thông báo">
             <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="updateBannerText()">Cập nhật Banner</button>
 
@@ -281,9 +285,6 @@
             <input type="number" id="admin-voucher-rate" class="modal-input" placeholder="% Giảm (VD: 10 = 10%)">
             <button class="btn-action" style="background:var(--accent-color); margin-top:4px;" onclick="addVoucher()">Thêm mã</button>
             <div id="admin-voucher-list" style="margin-top:8px;"></div>
-
-            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Quản lý thành viên</h4>
-            <div id="admin-user-manage-list"></div>
         </div>
     </div>
 </div>
@@ -326,15 +327,29 @@
 </div>
 
 <script>
+// Quản lý danh sách Whitelist ID trực tiếp qua localStorage (Mặc định ban đầu có admin)
+function getWhitelistIDs() {
+    return JSON.parse(localStorage.getItem("pro_whitelist") || '["admin"]');
+}
+
 let current = JSON.parse(localStorage.getItem("pro_curr") || "null");
 let cart = JSON.parse(localStorage.getItem("pro_cart") || "[]");
 let discountRate = 0;
 
-// Khởi tạo Banner và Voucher lưu trữ localStorage để quản lý mượt mà
+// Kiểm tra quyền Whitelist ngay khi khởi động
+if (current) {
+    let whitelist = getWhitelistIDs();
+    if (!whitelist.includes(current.username)) {
+        alert("⛔ Tài khoản của bạn chưa được Admin cấp phép truy cập vào trang web này!");
+        localStorage.removeItem("pro_curr");
+        location.reload();
+    } else {
+        initApp(current);
+    }
+}
+
 let savedBanner = localStorage.getItem("pro_banner") || '👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng đơn hàng ma quái! 🦇';
 document.getElementById("display-marquee-text").innerText = savedBanner;
-
-if (current) initApp(current);
 
 function showToast(msg) {
     let t = document.getElementById("toast");
@@ -353,21 +368,27 @@ function closeModal(id) { document.getElementById(id).style.display = "none"; }
 function handleLogin() {
     let username = document.getElementById("auth-u").value.trim();
     let password = document.getElementById("auth-p").value.trim();
-    let otpToken = document.getElementById("auth-otp").value.trim();
+
+    // Kiểm tra xem ID có nằm trong danh sách được cấp phép không trước khi gửi yêu cầu
+    let whitelist = getWhitelistIDs();
+    if (!whitelist.includes(username)) {
+        alert("⛔ Từ chối truy cập: ID/Username này chưa được Admin cấp quyền vào hệ thống!");
+        return;
+    }
 
     fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, otpToken })
+        body: JSON.stringify({ username, password })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.require2FA) {
-            document.getElementById("otp-group").style.display = "block";
-            showToast(data.message || "Vui lòng nhập mã Google Authenticator!");
-            return;
-        }
         if (data.success) {
+            let currentList = getWhitelistIDs();
+            if (!currentList.includes(data.user.username)) {
+                alert("⛔ Tài khoản này chưa được cấp phép truy cập!");
+                return;
+            }
             localStorage.setItem("pro_curr", JSON.stringify(data.user));
             initApp(data.user);
             showToast("Đăng nhập thành công!");
@@ -392,6 +413,7 @@ function initApp(acc) {
         document.getElementById("admin-card-menu").style.display = "block";
         document.getElementById("admin-banner-input").value = savedBanner;
         renderAdminLists();
+        renderWhitelistUI();
     } else {
         document.getElementById("nav-admin-btn").style.display = "none";
     }
@@ -412,13 +434,42 @@ function switchTab(id) {
     document.getElementById(id).classList.add('active');
 }
 
-// Cập nhật Banner Marquee
+// Thêm ID vào danh sách Whitelist trực tiếp từ bảng Admin
+function addWhitelistID() {
+    let newId = document.getElementById("admin-new-whitelist-id").value.trim();
+    if (!newId) { alert("Vui lòng nhập ID cần cấp phép!"); return; }
+    let whitelist = getWhitelistIDs();
+    if (whitelist.includes(newId)) { alert("ID này đã có sẵn trong danh sách cấp phép!"); return; }
+    whitelist.push(newId);
+    localStorage.setItem("pro_whitelist", JSON.stringify(whitelist));
+    document.getElementById("admin-new-whitelist-id").value = "";
+    showToast(`Đã cấp phép cho ID: @${newId}`);
+    renderWhitelistUI();
+}
+
+// Xóa ID khỏi danh sách Whitelist
+function removeWhitelistID(index) {
+    let whitelist = getWhitelistIDs();
+    let removed = whitelist.splice(index, 1);
+    localStorage.setItem("pro_whitelist", JSON.stringify(whitelist));
+    showToast(`Đã thu hồi quyền của ID: @${removed}`);
+    renderWhitelistUI();
+}
+
+function renderWhitelistUI() {
+    let whitelist = getWhitelistIDs();
+    let container = document.getElementById("admin-whitelist-display-list");
+    container.innerHTML = whitelist.map((id, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; margin-bottom:4px; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:4px;">
+            <span><b>@${id}</b></span>
+            <button class="btn-action" style="padding:2px 6px; background:var(--danger-color); color:#fff;" onclick="removeWhitelistID(${idx})">Thu hồi</button>
+        </div>
+    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có ID nào được cấp phép.</p>";
+}
+
 function updateBannerText() {
     let newText = document.getElementById("admin-banner-input").value.trim();
-    if (!newText) {
-        alert("Nội dung banner không được để trống!");
-        return;
-    }
+    if (!newText) { alert("Không được để trống banner!"); return; }
     localStorage.setItem("pro_banner", newText);
     document.getElementById("display-marquee-text").innerText = newText;
     showToast("Đã cập nhật banner thành công!");
@@ -429,12 +480,9 @@ async function fetchAPI(key) {
         let res = await fetch(`/api/db/${key}`);
         let data = await res.json();
         return data.data || [];
-    } catch(e) {
-        return [];
-    }
+    } catch(e) { return []; }
 }
 
-// Quản lý Voucher cục bộ thông qua localStorage bổ trợ
 function getLocalVouchers() {
     return JSON.parse(localStorage.getItem("pro_vouchers") || '[{"code": "MINHANH2K", "rate": 10}]');
 }
@@ -442,10 +490,7 @@ function getLocalVouchers() {
 async function addVoucher() {
     let code = document.getElementById("admin-voucher-code").value.trim();
     let rate = parseInt(document.getElementById("admin-voucher-rate").value);
-    if (!code || !rate) {
-        alert("Vui lòng điền đủ mã và % giảm giá!");
-        return;
-    }
+    if (!code || !rate) { alert("Nhập đủ thông tin mã và % giảm!"); return; }
     let vouchers = getLocalVouchers();
     vouchers.push({ code, rate });
     localStorage.setItem("pro_vouchers", JSON.stringify(vouchers));
@@ -595,7 +640,6 @@ async function renderAdminLists() {
         </div>
     `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có sản phẩm.</p>";
 
-    // Render danh sách Voucher thực tế
     let vouchers = getLocalVouchers();
     document.getElementById("admin-voucher-list").innerHTML = vouchers.map((v, idx) => `
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:6px; border-radius:6px; margin-bottom:4px;">
