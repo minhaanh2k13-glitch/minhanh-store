@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anh Store - Secure Fixed Edition</title>
+    <title>Anh Store - Complete Fix Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -174,7 +174,7 @@
 
 <div class="system-status">
     <div class="status-dot"></div>
-    <span>Network Guard Active</span>
+    <span>Secure & 2FA Active</span>
 </div>
 
 <div id="toast">Thông báo hệ thống!</div>
@@ -194,9 +194,12 @@
 <div id="auth-screen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-color); z-index:9999; display:flex; justify-content:center; align-items:center; padding:15px; background-image: radial-gradient(circle at 50% 50%, #2e1147 0%, #0b0716 85%);">
     <div class="card" style="width:100%; max-width:340px; text-align:center;">
         <h2 style="font-family:'Creepster', cursive; font-size: 2.8rem; margin-top:0; color:var(--accent-color); text-shadow: 0 0 10px rgba(255,117,24,0.7);">Anh Store</h2>
-        <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">🔒 Đăng nhập hệ thống bảo mật mạng 🔒</p>
+        <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">🔒 Đăng nhập hệ thống bảo mật 🔒</p>
         <input type="text" id="auth-u" class="modal-input" placeholder="Tên đăng nhập">
         <input type="password" id="auth-p" class="modal-input" placeholder="Mật khẩu">
+        <div id="otp-group" style="display:none; margin-top:6px;">
+            <input type="text" id="auth-otp" class="modal-input" placeholder="Mã Google Authenticator (6 số)" maxlength="6">
+        </div>
         <button class="btn-action" style="width:100%; margin-top:12px; padding:11px;" onclick="handleLogin()">Đăng Nhập</button>
     </div>
 </div>
@@ -228,6 +231,19 @@
                 <button class="btn-action" onclick="openModal('deposit-modal')">Nạp tiền ngay</button>
                 <button class="btn-action" style="background:var(--gold-color); color:#000;" onclick="openModal('vip-modal')">⭐ Nâng cấp VIP</button>
             </div>
+        </div>
+
+        <!-- CÀI ĐẶT GOOGLE AUTHENTICATOR (2FA) -->
+        <div class="card" id="card-2fa-setting">
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Bảo mật Google Authenticator (2FA)</h3>
+            <p id="status-2fa" style="font-size:11px; color:var(--text-sub);">Trạng thái: Đang tắt</p>
+            <div id="2fa-setup-container" style="display:none; text-align:center; margin-top:8px;">
+                <p style="font-size:11px;">Quét mã QR bằng ứng dụng Google Authenticator trên điện thoại:</p>
+                <img id="qr-code-img" src="" alt="QR Code" style="width:140px; height:140px; background:#fff; padding:4px; border-radius:6px; margin:4px auto; display:block;">
+                <input type="text" id="verify-otp-input" class="modal-input" placeholder="Nhập mã 6 số từ app để xác thực" maxlength="6">
+                <button class="btn-action" style="background:var(--success-color); color:#000; width:100%; margin-top:4px;" onclick="verifyAndEnable2FA()">Xác thực và Bật 2FA</button>
+            </div>
+            <button class="btn-action" id="btn-toggle-2fa" style="margin-top:8px;" onclick="setup2FA()">Bật Google Authenticator</button>
         </div>
 
         <div class="card">
@@ -310,15 +326,21 @@
     </div>
 </div>
 
-<!-- MODAL NẠP TIỀN -->
+<!-- MODAL NẠP TIỀN KÈM QR CHUYỂN KHOẢN -->
 <div id="deposit-modal" class="modal">
-    <div class="modal-content">
-        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Yêu cầu nạp tiền</h3>
-        <p style="font-size:11px; color:var(--text-sub);">Nhập số tiền muốn nạp:</p>
-        <input type="number" id="dep-amount" class="modal-input" placeholder="Số tiền (VNĐ)">
+    <div class="modal-content text-center">
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Nạp Tiền Qua QR Chuyển Khoản</h3>
+        <p style="font-size:11px; color:var(--text-sub); margin-bottom:10px;">Quét mã QR bên dưới để chuyển khoản tự động:</p>
+        
+        <!-- Ảnh QR Chuyển Khoản (Ví dụ Vietcombank / MoMo) -->
+        <img src="https://api.vietqr.io/image/970436-123456789-Q9b3x8f.jpg?accountName=ANH%20STORE&amount=0&addInfo=NAP" alt="QR Nạp Tiền" style="width:160px; height:160px; background:#fff; padding:6px; border-radius:8px; margin:0 auto 10px auto; display:block;">
+        
+        <p style="font-size:11px; color:var(--gold-color); margin-bottom:10px;">Nội dung chuyển khoản: <b id="qr-transfer-content">NAP [Tên tài khoản]</b></p>
+        
+        <input type="number" id="dep-amount" class="modal-input" placeholder="Nhập số tiền đã chuyển (VNĐ)">
         <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px;">
-            <button class="btn-action" style="background:#374151;" onclick="closeModal('deposit-modal')">Hủy</button>
-            <button class="btn-action" onclick="submitDeposit()">Gửi yêu cầu</button>
+            <button class="btn-action" style="background:#374151;" onclick="closeModal('deposit-modal')">Đóng</button>
+            <button class="btn-action" onclick="submitDeposit()">Đã chuyển khoản, Gửi duyệt</button>
         </div>
     </div>
 </div>
@@ -384,7 +406,6 @@
             return false;
         }
     });
-    // Phát hiện mở DevTools qua kích thước cửa sổ
     setInterval(() => {
         if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
             localStorage.removeItem("pro_curr");
@@ -434,20 +455,31 @@ function toggleTheme() {
     document.body.classList.toggle("light-mode");
 }
 
-function openModal(id) { document.getElementById(id).style.display = "flex"; }
+function openModal(id) { 
+    document.getElementById(id).style.display = "flex"; 
+    if(id === 'deposit-modal' && current) {
+        document.getElementById("qr-transfer-content").innerText = `NAP ${current.username}`;
+    }
+}
 function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
 function handleLogin() {
     let username = document.getElementById("auth-u").value.trim();
     let password = document.getElementById("auth-p").value.trim();
+    let otpToken = document.getElementById("auth-otp") ? document.getElementById("auth-otp").value.trim() : "";
 
     fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password, otpToken })
     })
     .then(res => res.json())
     .then(data => {
+        if (data.require2FA) {
+            document.getElementById("otp-group").style.display = "block";
+            showToast(data.message || "Vui lòng nhập mã Google Authenticator!");
+            return;
+        }
         if (data.success) {
             localStorage.setItem("pro_curr", JSON.stringify(data.user));
             initApp(data.user);
@@ -460,12 +492,61 @@ function handleLogin() {
     });
 }
 
+function setup2FA() {
+    fetch('/api/2fa/setup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: current.username})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById("qr-code-img").src = data.qrCodeUrl;
+            document.getElementById("2fa-setup-container").style.display = "block";
+            document.getElementById("btn-toggle-2fa").style.display = "none";
+            showToast("Đã tạo mã QR kết nối Google Authenticator!");
+        } else {
+            alert(data.message || "Không thể khởi tạo 2FA.");
+        }
+    }).catch(err => alert("Lỗi kết nối server!"));
+}
+
+function verifyAndEnable2FA() {
+    let token = document.getElementById("verify-otp-input").value.trim();
+    if (!token || token.length !== 6) {
+        alert("Vui lòng nhập mã OTP 6 số hợp lệ từ ứng dụng Google Authenticator!");
+        return;
+    }
+    fetch('/api/2fa/verify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: current.username, token})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast("Đã bật bảo mật Google Authenticator thành công!");
+            current.twoFactorEnabled = true;
+            localStorage.setItem("pro_curr", JSON.stringify(current));
+            document.getElementById("status-2fa").innerText = "Trạng thái: Đang bật (Đã bảo vệ)";
+            document.getElementById("2fa-setup-container").style.display = "none";
+        } else {
+            alert(data.message || "Mã xác thực không chính xác!");
+        }
+    });
+}
+
 function initApp(acc) {
     current = acc;
     document.getElementById("auth-screen").style.display = "none";
     document.getElementById("acc-username-display").innerText = `Tài khoản: @${current.username}`;
     document.getElementById("acc-role-display").innerText = `Quyền hạn: ${current.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}`;
     document.getElementById("user-balance").innerText = parseInt(current.balance || 0).toLocaleString() + "đ";
+
+    if (current.twoFactorEnabled) {
+        document.getElementById("status-2fa").innerText = "Trạng thái: Đang bật (Đã bảo vệ)";
+        document.getElementById("btn-toggle-2fa").style.display = "none";
+    }
 
     let vipSpan = document.getElementById("vip-badge-span");
     if (current.vip === 'gold') {
@@ -572,6 +653,7 @@ async function adminDirectTopup() {
     }
 }
 
+// --- QUẢN LÝ MÃ GIẢM GIÁ (VOUCHER) TRỰC TIẾP ---
 function getLocalVouchers() {
     return JSON.parse(localStorage.getItem("pro_vouchers") || '[{"code": "MINHANH2K", "rate": 10, "expiry": "2030-12-31T23:59"}]');
 }
@@ -581,17 +663,22 @@ async function addVoucherWithExpiry() {
     let rate = parseInt(document.getElementById("admin-voucher-rate").value);
     let expiry = document.getElementById("admin-voucher-expiry").value;
 
-    if (!code || !rate || !expiry) {
-        alert("Vui lòng nhập đầy đủ mã, % giảm và thời hạn hoạt động!");
+    if (!code || !rate) {
+        alert("Vui lòng nhập đủ mã code và % giảm giá!");
         return;
     }
+    // Nếu không chọn thời gian, mặc định gán hạn xa (năm 2030) để không bị lỗi trống
+    if (!expiry) {
+        expiry = "2030-12-31T23:59";
+    }
+
     let vouchers = getLocalVouchers();
     vouchers.push({ code, rate, expiry });
     localStorage.setItem("pro_vouchers", JSON.stringify(vouchers));
     document.getElementById("admin-voucher-code").value = "";
     document.getElementById("admin-voucher-rate").value = "";
     document.getElementById("admin-voucher-expiry").value = "";
-    showToast("Đã tạo mã giảm giá kèm thời gian hoạt động thành công!");
+    showToast("Đã tạo mã giảm giá thành công!");
     renderAdminLists();
 }
 
@@ -599,7 +686,7 @@ function deleteVoucher(idx) {
     let vouchers = getLocalVouchers();
     vouchers.splice(idx, 1);
     localStorage.setItem("pro_vouchers", JSON.stringify(vouchers));
-    showToast("Đã xóa mã giảm giá!");
+    showToast("Đã xóa mã giảm giá thành công!");
     renderAdminLists();
 }
 
@@ -779,13 +866,13 @@ async function renderHistory() {
 
 async function submitDeposit() {
     let amount = document.getElementById("dep-amount").value;
-    if (!amount || amount <= 0) { alert("Nhập số tiền hợp lệ!"); return; }
+    if (!amount || amount <= 0) { alert("Nhập số tiền hợp lệ đã chuyển khoản!"); return; }
     let res = await (await fetch('/api/deposit/submit', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({username: current.username, amount})
     })).json();
-    if (res.success) { showToast("Đã gửi yêu cầu nạp tiền!"); closeModal('deposit-modal'); document.getElementById("dep-amount").value = ""; }
+    if (res.success) { showToast("Đã gửi yêu cầu nạp tiền chờ Admin duyệt!"); closeModal('deposit-modal'); document.getElementById("dep-amount").value = ""; }
     else alert(res.message);
 }
 
@@ -812,7 +899,7 @@ async function renderAdminLists() {
     let vouchers = getLocalVouchers();
     document.getElementById("admin-voucher-list").innerHTML = vouchers.map((v, idx) => `
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:6px; border-radius:6px; margin-bottom:4px;">
-            <span><b>${v.code}</b> (-${v.rate}%) - Hạn: ${v.expiry.replace('T', ' ')}</span>
+            <span><b>${v.code}</b> (-${v.rate}%) - Hạn: ${v.expiry ? v.expiry.replace('T', ' ') : 'Vô thời hạn'}</span>
             <button class="btn-action" style="padding:2px 6px; background:var(--danger-color); color:#fff;" onclick="deleteVoucher(${idx})">Xóa</button>
         </div>
     `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có mã giảm giá.</p>";
