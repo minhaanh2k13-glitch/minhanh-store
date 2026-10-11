@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anh Store - Dynamic Whitelist Access</title>
+    <title>Anh Store - Network Whitelist & VIP Discount Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,6 +16,8 @@
             --danger-color: #ef4444;
             --success-color: #22c55e;
             --neon-purple: #b537f2;
+            --gold-color: #fbbf24;
+            --silver-color: #94a3b8;
         }
         .light-mode {
             --bg-color: #f1f5f9;
@@ -145,6 +147,9 @@
             border: 2px solid var(--accent-color);
         }
         .badge-admin { background: var(--danger-color); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .badge-vip-silver { background: var(--silver-color); color: #000; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .badge-vip-gold { background: var(--gold-color); color: #000; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        
         .marquee-banner { background: rgba(255, 117, 24, 0.1); border: 1px dashed var(--accent-color); padding: 8px; border-radius: 8px; margin-bottom: 15px; overflow: hidden; white-space: nowrap; }
         .marquee-text { display: inline-block; animation: marquee 18s linear infinite; font-size: 12px; color: var(--accent-color); font-weight: bold; font-family: 'Creepster', cursive; letter-spacing: 1px; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
@@ -167,20 +172,30 @@
 
 <div class="system-status">
     <div class="status-dot"></div>
-    <span>Admin Whitelist Panel</span>
+    <span>Network Guard Active</span>
 </div>
 
 <div id="toast">Thông báo hệ thống!</div>
 <a href="https://t.me/minhanh2k" target="_blank" class="float-tg">🦇</a>
 
+<!-- MÀN HÌNH CHẶN NẾU IP/MẠNG KHÔNG ĐƯỢC CẤP PHÉP -->
+<div id="network-block-screen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:#07040d; z-index:99999; display:none; justify-content:center; align-items:center; padding:20px; text-align:center;">
+    <div class="card" style="max-width:400px; border-color:var(--danger-color);">
+        <h2 style="color:var(--danger-color); font-family:'Creepster', cursive; font-size:2.5rem;">TRUY CẬP BỊ TỪ CHỐI</h2>
+        <p style="font-size:13px; color:var(--text-sub); margin:15px 0;">Địa chỉ Mạng / IP của thiết bị này chưa được Admin cấp phép truy cập vào trang web của Anh Store.</p>
+        <p id="current-user-ip" style="font-size:12px; color:var(--accent-color); font-weight:bold; margin-bottom:15px;"></p>
+        <button class="btn-action" style="background:var(--danger-color);" onclick="location.reload()">Kiểm tra lại kết nối</button>
+    </div>
+</div>
+
 <!-- MÀN HÌNH ĐĂNG NHẬP -->
 <div id="auth-screen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-color); z-index:9999; display:flex; justify-content:center; align-items:center; padding:15px; background-image: radial-gradient(circle at 50% 50%, #2e1147 0%, #0b0716 85%);">
     <div class="card" style="width:100%; max-width:340px; text-align:center;">
         <h2 style="font-family:'Creepster', cursive; font-size: 2.8rem; margin-top:0; color:var(--accent-color); text-shadow: 0 0 10px rgba(255,117,24,0.7);">Anh Store</h2>
-        <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">🔒 Yêu cầu ID được cấp phép truy cập 🔒</p>
-        <input type="text" id="auth-u" class="modal-input" placeholder="Tên đăng nhập (ID)">
+        <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">🔒 Đăng nhập hệ thống bảo mật mạng 🔒</p>
+        <input type="text" id="auth-u" class="modal-input" placeholder="Tên đăng nhập">
         <input type="password" id="auth-p" class="modal-input" placeholder="Mật khẩu">
-        <button class="btn-action" style="width:100%; margin-top:12px; padding:11px;" onclick="handleLogin()">Đăng Nhập Hệ Thống</button>
+        <button class="btn-action" style="width:100%; margin-top:12px; padding:11px;" onclick="handleLogin()">Đăng Nhập</button>
     </div>
 </div>
 
@@ -190,8 +205,9 @@
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <div style="font-weight: 800; font-size: 14px; color: var(--neon-purple);">
-            ⚡ Trạng thái: <span id="admin-badge-span" class="badge-admin" style="display:none;">ADMIN</span> An toàn
+        <div style="font-weight: 800; font-size: 13px; color: var(--neon-purple);">
+            ⚡ Trạng thái: <span id="admin-badge-span" class="badge-admin" style="display:none;">ADMIN</span> 
+            <span id="vip-badge-span" style="display:none;"></span> Hoạt động
         </div>
         <div style="display: flex; gap: 6px; align-items: center;">
             <button class="btn-action" style="padding: 5px 10px; font-size: 10px; background: #2a1545;" onclick="toggleTheme()">Theme</button>
@@ -206,19 +222,10 @@
             <p id="acc-username-display" style="font-size:12px; margin:4px 0;">Tài khoản: --</p>
             <p id="acc-role-display" style="font-size:12px; margin:4px 0;">Quyền hạn: --</p>
             <p style="font-size:12px; margin:4px 0;">Số dư: <b id="user-balance" style="color:var(--success-color);">0đ</b></p>
-            <button class="btn-action" style="margin-top:8px;" onclick="openModal('deposit-modal')">Nạp tiền ngay</button>
-        </div>
-
-        <div class="card" id="card-2fa-setting">
-            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive;">Bảo mật Google Authenticator (2FA)</h3>
-            <p id="status-2fa" style="font-size:11px; color:var(--text-sub);">Trạng thái: Đang tắt</p>
-            <div id="2fa-setup-container" style="display:none; text-align:center; margin-top:8px;">
-                <p style="font-size:11px;">Quét mã QR bên dưới bằng ứng dụng Google Authenticator:</p>
-                <img id="qr-code-img" src="" alt="QR Code" style="width:140px; height:140px; background:#fff; padding:4px; border-radius:6px; margin:4px auto;">
-                <input type="text" id="verify-otp-input" class="modal-input" placeholder="Nhập mã 6 số từ app để xác thực" maxlength="6">
-                <button class="btn-action" style="background:var(--success-color); color:#000; width:100%; margin-top:4px;" onclick="verifyAndEnable2FA()">Xác thực và Bật 2FA</button>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn-action" onclick="openModal('deposit-modal')">Nạp tiền ngay</button>
+                <button class="btn-action" style="background:var(--gold-color); color:#000;" onclick="openModal('vip-modal')">⭐ Nâng cấp VIP</button>
             </div>
-            <button class="btn-action" id="btn-toggle-2fa" style="margin-top:8px;" onclick="setup2FA()">Bật Google Authenticator</button>
         </div>
 
         <div class="card">
@@ -252,39 +259,51 @@
         </div>
     </div>
 
-    <!-- TAB ADMIN (CÓ PHẦN QUẢN LÝ ID WHITELIST TRỰC TIẾP) -->
+    <!-- TAB ADMIN -->
     <div id="tab-admin" class="tab-content">
         <div class="card" id="admin-card-menu" style="display:none; border-color:var(--danger-color);">
-            <h3 style="margin-top:0; font-size:16px; color:var(--danger-color); font-family:'Creepster', cursive;">👑 Khu vực quản trị & Cấp phép ID</h3>
+            <h3 style="margin-top:0; font-size:16px; color:var(--danger-color); font-family:'Creepster', cursive;">👑 Khu vực quản trị tối cao</h3>
             
-            <h4 style="font-size:12px; margin:8px 0 4px 0; color:var(--accent-color);">Quản lý ID/Username Whitelist Được Phép Truy Cập</h4>
+            <h4 style="font-size:12px; margin:8px 0 4px 0; color:var(--accent-color);">1. Quản lý Địa chỉ Mạng / IP Được Phép Truy Cập</h4>
             <div style="display:flex; gap:6px; margin-bottom:8px;">
-                <input type="text" id="admin-new-whitelist-id" class="modal-input" placeholder="Nhập ID/Username mới cần cấp phép" style="margin:0;">
-                <button class="btn-action" style="background:var(--success-color); color:#000; white-space:nowrap;" onclick="addWhitelistID()">Thêm ID</button>
+                <input type="text" id="admin-new-network-ip" class="modal-input" placeholder="Nhập IP/Mạng (VD: 192.168.1.5 hoặc Local)" style="margin:0;">
+                <button class="btn-action" style="background:var(--success-color); color:#000; white-space:nowrap;" onclick="addNetworkIP()">Cấp phép IP</button>
             </div>
-            <div id="admin-whitelist-display-list" style="max-height:120px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:12px;"></div>
+            <div id="admin-network-display-list" style="max-height:110px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:12px;"></div>
 
-            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Chỉnh sửa Banner Chạy (Marquee)</h4>
+            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">2. Nạp Tiền Trực Tiếp Cho Tài Khoản (@username)</h4>
+            <input type="text" id="admin-topup-user" class="modal-input" placeholder="Tên tài khoản cần nạp (VD: admin)">
+            <input type="number" id="admin-topup-amount" class="modal-input" placeholder="Số tiền nạp (VNĐ)">
+            <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="adminDirectTopup()">Xác nhận nạp tiền</button>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">3. Tạo Tài Khoản Mới</h4>
+            <input type="text" id="admin-new-u" class="modal-input" placeholder="Tên đăng nhập">
+            <input type="text" id="admin-new-p" class="modal-input" placeholder="Mật khẩu">
+            <button class="btn-action" style="margin-top:4px;" onclick="adminCreateUser()">Khởi tạo tài khoản</button>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">4. Ban / Khóa Tài Khoản</h4>
+            <input type="text" id="admin-ban-u" class="modal-input" placeholder="Tên tài khoản cần ban">
+            <button class="btn-action" style="background:var(--danger-color); color:#fff; margin-top:4px;" onclick="adminBanUser()">Ban tài khoản</button>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">5. Tạo Mã Giảm Giá (Voucher & Thời Gian Hoạt Động)</h4>
+            <input type="text" id="admin-voucher-code" class="modal-input" placeholder="Mã code (VD: SALE50)">
+            <input type="number" id="admin-voucher-rate" class="modal-input" placeholder="% Giảm giá (VD: 10 = 10%)">
+            <label style="font-size:11px; color:var(--text-sub);">Hạn chót thời gian hoạt động:</label>
+            <input type="datetime-local" id="admin-voucher-expiry" class="modal-input">
+            <button class="btn-action" style="background:var(--accent-color); margin-top:4px;" onclick="addVoucherWithExpiry()">Tạo Mã Hoạt Động</button>
+            <div id="admin-voucher-list" style="margin-top:8px;"></div>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">6. Chỉnh Sửa Banner Chạy</h4>
             <input type="text" id="admin-banner-input" class="modal-input" placeholder="Nội dung banner thông báo">
             <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="updateBannerText()">Cập nhật Banner</button>
 
-            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Duyệt nạp tiền</h4>
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">7. Duyệt Yêu Cầu Nạp Tiền & Kho Hàng</h4>
             <div id="admin-pending-deposits"></div>
-
-            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Thêm sản phẩm</h4>
             <input type="text" id="admin-prod-name" class="modal-input" placeholder="Tên sản phẩm">
             <input type="number" id="admin-prod-price" class="modal-input" placeholder="Giá tiền">
             <textarea id="admin-prod-stock" class="modal-input" placeholder="Danh sách tài khoản (mỗi dòng 1 acc)" style="height:60px;"></textarea>
-            <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="addNewProduct()">Đăng bán</button>
-
-            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Quản lý kho hàng</h4>
-            <div id="admin-product-manage-list"></div>
-
-            <h4 style="font-size:12px; margin:12px 0 4px 0; color:var(--accent-color);">Tạo mã giảm giá (Voucher)</h4>
-            <input type="text" id="admin-voucher-code" class="modal-input" placeholder="Mã code (VD: SALE10)">
-            <input type="number" id="admin-voucher-rate" class="modal-input" placeholder="% Giảm (VD: 10 = 10%)">
-            <button class="btn-action" style="background:var(--accent-color); margin-top:4px;" onclick="addVoucher()">Thêm mã</button>
-            <div id="admin-voucher-list" style="margin-top:8px;"></div>
+            <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="addNewProduct()">Đăng bán sản phẩm</button>
+            <div id="admin-product-manage-list" style="margin-top:10px;"></div>
         </div>
     </div>
 </div>
@@ -302,11 +321,34 @@
     </div>
 </div>
 
+<!-- MODAL MUA VIP -->
+<div id="vip-modal" class="modal">
+    <div class="modal-content text-center">
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--gold-color);">⭐ Nâng Cấp Gói VIP ⭐</h3>
+        <p style="font-size:11px; color:var(--text-sub); margin-bottom:15px;">Chọn cấp độ VIP để nhận đặc quyền giảm giá độc quyền:</p>
+        
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid var(--silver-color);">
+            <b style="color:var(--silver-color); font-size:14px;">Gói VIP Bạc (50.000đ)</b><br>
+            <small style="color:var(--success-color);">✨ Giảm ngay 10% mọi đơn hàng!</small><br>
+            <button class="btn-action" style="background:var(--silver-color); color:#000; margin-top:6px;" onclick="buyVipPackage('silver', 50000)">Nâng Cấp VIP Bạc</button>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:12px; border:1px solid var(--gold-color);">
+            <b style="color:var(--gold-color); font-size:14px;">Gói VIP Vàng (100.000đ)</b><br>
+            <small style="color:var(--success-color);">🔥 Giảm ngay 20% mọi đơn hàng!</small><br>
+            <button class="btn-action" style="background:var(--gold-color); color:#000; margin-top:6px;" onclick="buyVipPackage('gold', 100000)">Nâng Cấp VIP Vàng</button>
+        </div>
+
+        <button class="btn-action" style="background:#374151; width:100%;" onclick="closeModal('vip-modal')">Đóng</button>
+    </div>
+</div>
+
 <!-- MODAL GIỎ HÀNG -->
 <div id="cart-modal" class="modal">
     <div class="modal-content">
         <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Giỏ hàng</h3>
         <div id="cart-items-list" style="max-height:150px; overflow-y:auto; margin-bottom:8px;"></div>
+        <div id="vip-discount-notice" style="font-size:11px; color:var(--success-color); margin-bottom:6px; font-weight:bold;"></div>
         <input type="text" id="voucher-input" class="modal-input" placeholder="Nhập mã giảm giá">
         <button class="btn-action" style="width:100%; background:#2a1545; border:1px solid var(--accent-color); margin-bottom:8px;" onclick="applyVoucher()">Áp dụng mã</button>
         <div style="font-size:13px; font-weight:bold; margin-bottom:10px;">Tổng thanh toán: <span id="cart-total-price" style="color:var(--success-color);">0đ</span></div>
@@ -327,29 +369,35 @@
 </div>
 
 <script>
-// Quản lý danh sách Whitelist ID trực tiếp qua localStorage (Mặc định ban đầu có admin)
-function getWhitelistIDs() {
-    return JSON.parse(localStorage.getItem("pro_whitelist") || '["admin"]');
+function getNetworkWhitelist() {
+    return JSON.parse(localStorage.getItem("pro_network_whitelist") || '["127.0.0.1", "localhost", "192.168."] ');
+}
+
+function checkNetworkAccess() {
+    let clientIP = "127.0.0.1";
+    let whitelist = getNetworkWhitelist();
+    let isAllowed = whitelist.some(item => clientIP.includes(item) || item.includes(clientIP));
+    
+    if (!isAllowed) {
+        document.getElementById("network-block-screen").style.display = "flex";
+        document.getElementById("current-user-ip").innerText = `Địa chỉ mạng thiết bị của bạn: ${clientIP}`;
+        return false;
+    }
+    return true;
+}
+
+if (!checkNetworkAccess()) {
+    throw new Error("Network Access Denied");
 }
 
 let current = JSON.parse(localStorage.getItem("pro_curr") || "null");
 let cart = JSON.parse(localStorage.getItem("pro_cart") || "[]");
 let discountRate = 0;
 
-// Kiểm tra quyền Whitelist ngay khi khởi động
-if (current) {
-    let whitelist = getWhitelistIDs();
-    if (!whitelist.includes(current.username)) {
-        alert("⛔ Tài khoản của bạn chưa được Admin cấp phép truy cập vào trang web này!");
-        localStorage.removeItem("pro_curr");
-        location.reload();
-    } else {
-        initApp(current);
-    }
-}
-
 let savedBanner = localStorage.getItem("pro_banner") || '👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng đơn hàng ma quái! 🦇';
 document.getElementById("display-marquee-text").innerText = savedBanner;
+
+if (current) initApp(current);
 
 function showToast(msg) {
     let t = document.getElementById("toast");
@@ -369,13 +417,6 @@ function handleLogin() {
     let username = document.getElementById("auth-u").value.trim();
     let password = document.getElementById("auth-p").value.trim();
 
-    // Kiểm tra xem ID có nằm trong danh sách được cấp phép không trước khi gửi yêu cầu
-    let whitelist = getWhitelistIDs();
-    if (!whitelist.includes(username)) {
-        alert("⛔ Từ chối truy cập: ID/Username này chưa được Admin cấp quyền vào hệ thống!");
-        return;
-    }
-
     fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -384,11 +425,6 @@ function handleLogin() {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            let currentList = getWhitelistIDs();
-            if (!currentList.includes(data.user.username)) {
-                alert("⛔ Tài khoản này chưa được cấp phép truy cập!");
-                return;
-            }
             localStorage.setItem("pro_curr", JSON.stringify(data.user));
             initApp(data.user);
             showToast("Đăng nhập thành công!");
@@ -407,13 +443,24 @@ function initApp(acc) {
     document.getElementById("acc-role-display").innerText = `Quyền hạn: ${current.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}`;
     document.getElementById("user-balance").innerText = parseInt(current.balance || 0).toLocaleString() + "đ";
 
+    let vipSpan = document.getElementById("vip-badge-span");
+    if (current.vip === 'gold') {
+        vipSpan.style.display = "inline-block";
+        vipSpan.className = "badge-vip-gold";
+        vipSpan.innerText = "VIP VÀNG (-20%)";
+    } else if (current.vip === 'silver') {
+        vipSpan.style.display = "inline-block";
+        vipSpan.className = "badge-vip-silver";
+        vipSpan.innerText = "VIP BẠC (-10%)";
+    }
+
     if (current.role === 'admin') {
         document.getElementById("admin-badge-span").style.display = "inline-block";
         document.getElementById("nav-admin-btn").style.display = "block";
         document.getElementById("admin-card-menu").style.display = "block";
         document.getElementById("admin-banner-input").value = savedBanner;
         renderAdminLists();
-        renderWhitelistUI();
+        renderNetworkUI();
     } else {
         document.getElementById("nav-admin-btn").style.display = "none";
     }
@@ -434,37 +481,159 @@ function switchTab(id) {
     document.getElementById(id).classList.add('active');
 }
 
-// Thêm ID vào danh sách Whitelist trực tiếp từ bảng Admin
-function addWhitelistID() {
-    let newId = document.getElementById("admin-new-whitelist-id").value.trim();
-    if (!newId) { alert("Vui lòng nhập ID cần cấp phép!"); return; }
-    let whitelist = getWhitelistIDs();
-    if (whitelist.includes(newId)) { alert("ID này đã có sẵn trong danh sách cấp phép!"); return; }
-    whitelist.push(newId);
-    localStorage.setItem("pro_whitelist", JSON.stringify(whitelist));
-    document.getElementById("admin-new-whitelist-id").value = "";
-    showToast(`Đã cấp phép cho ID: @${newId}`);
-    renderWhitelistUI();
+function addNetworkIP() {
+    let ip = document.getElementById("admin-new-network-ip").value.trim();
+    if (!ip) { alert("Vui lòng nhập địa chỉ IP hoặc mạng!"); return; }
+    let list = getNetworkWhitelist();
+    if (list.includes(ip)) { alert("Địa chỉ này đã được cấp phép từ trước!"); return; }
+    list.push(ip);
+    localStorage.setItem("pro_network_whitelist", JSON.stringify(list));
+    document.getElementById("admin-new-network-ip").value = "";
+    showToast(`Đã cấp phép mạng thành công: ${ip}`);
+    renderNetworkUI();
 }
 
-// Xóa ID khỏi danh sách Whitelist
-function removeWhitelistID(index) {
-    let whitelist = getWhitelistIDs();
-    let removed = whitelist.splice(index, 1);
-    localStorage.setItem("pro_whitelist", JSON.stringify(whitelist));
-    showToast(`Đã thu hồi quyền của ID: @${removed}`);
-    renderWhitelistUI();
+function removeNetworkIP(index) {
+    let list = getNetworkWhitelist();
+    let removed = list.splice(index, 1);
+    localStorage.setItem("pro_network_whitelist", JSON.stringify(list));
+    showToast(`Đã thu hồi mạng: ${removed}`);
+    renderNetworkUI();
 }
 
-function renderWhitelistUI() {
-    let whitelist = getWhitelistIDs();
-    let container = document.getElementById("admin-whitelist-display-list");
-    container.innerHTML = whitelist.map((id, idx) => `
+function renderNetworkUI() {
+    let list = getNetworkWhitelist();
+    let container = document.getElementById("admin-network-display-list");
+    container.innerHTML = list.map((item, idx) => `
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; margin-bottom:4px; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:4px;">
-            <span><b>@${id}</b></span>
-            <button class="btn-action" style="padding:2px 6px; background:var(--danger-color); color:#fff;" onclick="removeWhitelistID(${idx})">Thu hồi</button>
+            <span>🌐 <b>${item}</b></span>
+            <button class="btn-action" style="padding:2px 6px; background:var(--danger-color); color:#fff;" onclick="removeNetworkIP(${idx})">Thu hồi</button>
         </div>
-    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có ID nào được cấp phép.</p>";
+    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có địa chỉ mạng nào được cấp phép.</p>";
+}
+
+async function buyVipPackage(type, price) {
+    let currentBal = current.balance || 0;
+    if (currentBal < price) {
+        alert("Số dư tài khoản không đủ để nâng cấp gói VIP này!");
+        return;
+    }
+    current.balance = currentBal - price;
+    current.vip = type;
+    localStorage.setItem("pro_curr", JSON.stringify(current));
+    showToast(`Nâng cấp thành công gói VIP ${type.toUpperCase()}!`);
+    closeModal('vip-modal');
+    initApp(current);
+}
+
+async function adminDirectTopup() {
+    let username = document.getElementById("admin-topup-user").value.trim();
+    let amount = parseInt(document.getElementById("admin-topup-amount").value);
+    if (!username || !amount || amount <= 0) {
+        alert("Vui lòng điền đủ tên tài khoản và số tiền hợp lệ!");
+        return;
+    }
+    let res = await (await fetch('/api/admin/edit-balance', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, targetUsername: username, amount, type: 'add'})
+    })).json();
+
+    if (res.success) {
+        showToast(`Đã nạp ${amount.toLocaleString()}đ cho tài khoản @${username}!`);
+        document.getElementById("admin-topup-user").value = "";
+        document.getElementById("admin-topup-amount").value = "";
+    } else {
+        alert(res.message || "Không thể thực hiện nạp tiền.");
+    }
+}
+
+function getLocalVouchers() {
+    return JSON.parse(localStorage.getItem("pro_vouchers") || '[{"code": "MINHANH2K", "rate": 10, "expiry": "2030-12-31T23:59"}]');
+}
+
+async function addVoucherWithExpiry() {
+    let code = document.getElementById("admin-voucher-code").value.trim();
+    let rate = parseInt(document.getElementById("admin-voucher-rate").value);
+    let expiry = document.getElementById("admin-voucher-expiry").value;
+
+    if (!code || !rate || !expiry) {
+        alert("Vui lòng nhập đầy đủ mã, % giảm và thời hạn hoạt động!");
+        return;
+    }
+    let vouchers = getLocalVouchers();
+    vouchers.push({ code, rate, expiry });
+    localStorage.setItem("pro_vouchers", JSON.stringify(vouchers));
+    document.getElementById("admin-voucher-code").value = "";
+    document.getElementById("admin-voucher-rate").value = "";
+    document.getElementById("admin-voucher-expiry").value = "";
+    showToast("Đã tạo mã giảm giá kèm thời gian hoạt động thành công!");
+    renderAdminLists();
+}
+
+function deleteVoucher(idx) {
+    let vouchers = getLocalVouchers();
+    vouchers.splice(idx, 1);
+    localStorage.setItem("pro_vouchers", JSON.stringify(vouchers));
+    showToast("Đã xóa mã giảm giá!");
+    renderAdminLists();
+}
+
+async function applyVoucher() {
+    let code = document.getElementById("voucher-input").value.trim();
+    let vouchers = getLocalVouchers();
+    let v = vouchers.find(x => x.code.toUpperCase() === code.toUpperCase());
+    
+    if (!v) {
+        alert("Mã giảm giá không tồn tại!");
+        return;
+    }
+    let now = new Date();
+    let expDate = new Date(v.expiry);
+    if (now > expDate) {
+        alert("Mã giảm giá này đã hết thời gian hoạt động!");
+        return;
+    }
+
+    discountRate = v.rate / 100;
+    showToast(`Đã áp dụng mã giảm ${v.rate}% thành công!`);
+    updateCartUI();
+}
+
+async function adminBanUser() {
+    let targetUsername = document.getElementById("admin-ban-u").value.trim();
+    if (!targetUsername) { alert("Nhập tên tài khoản cần ban!"); return; }
+    let res = await (await fetch('/api/admin/delete-user', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, targetUsername})
+    })).json();
+
+    if (res.success) {
+        showToast(`Đã ban thành công tài khoản @${targetUsername}`);
+        document.getElementById("admin-ban-u").value = "";
+    } else {
+        alert(res.message || "Không thể ban tài khoản này.");
+    }
+}
+
+async function adminCreateUser() {
+    let newUsername = document.getElementById("admin-new-u").value.trim();
+    let newPassword = document.getElementById("admin-new-p").value.trim();
+    if (!newUsername || !newPassword) { alert("Nhập đủ tên và mật khẩu!"); return; }
+    let res = await (await fetch('/api/admin/create-user', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, newUsername, newPassword})
+    })).json();
+
+    if (res.success) {
+        showToast("Tạo tài khoản mới thành công!");
+        document.getElementById("admin-new-u").value = "";
+        document.getElementById("admin-new-p").value = "";
+    } else {
+        alert(res.message);
+    }
 }
 
 function updateBannerText() {
@@ -481,44 +650,6 @@ async function fetchAPI(key) {
         let data = await res.json();
         return data.data || [];
     } catch(e) { return []; }
-}
-
-function getLocalVouchers() {
-    return JSON.parse(localStorage.getItem("pro_vouchers") || '[{"code": "MINHANH2K", "rate": 10}]');
-}
-
-async function addVoucher() {
-    let code = document.getElementById("admin-voucher-code").value.trim();
-    let rate = parseInt(document.getElementById("admin-voucher-rate").value);
-    if (!code || !rate) { alert("Nhập đủ thông tin mã và % giảm!"); return; }
-    let vouchers = getLocalVouchers();
-    vouchers.push({ code, rate });
-    localStorage.setItem("pro_vouchers", JSON.stringify(vouchers));
-    document.getElementById("admin-voucher-code").value = "";
-    document.getElementById("admin-voucher-rate").value = "";
-    showToast("Đã thêm mã giảm giá thành công!");
-    renderAdminLists();
-}
-
-function deleteVoucher(idx) {
-    let vouchers = getLocalVouchers();
-    vouchers.splice(idx, 1);
-    localStorage.setItem("pro_vouchers", JSON.stringify(vouchers));
-    showToast("Đã xóa mã giảm giá!");
-    renderAdminLists();
-}
-
-async function applyVoucher() {
-    let code = document.getElementById("voucher-input").value.trim();
-    let vouchers = getLocalVouchers();
-    let v = vouchers.find(x => x.code.toUpperCase() === code.toUpperCase());
-    if (v) {
-        discountRate = v.rate / 100;
-        showToast(`Đã áp dụng mã giảm ${v.rate}%!`);
-        updateCartUI();
-    } else {
-        alert("Mã giảm giá không hợp lệ hoặc đã hết hạn!");
-    }
 }
 
 async function renderShop() {
@@ -578,7 +709,23 @@ function updateCartUI() {
         `;
     });
     list.innerHTML = html || "<p style='font-size:11px; color:var(--text-sub);'>Giỏ hàng trống</p>";
-    let finalPrice = total * (1 - discountRate);
+    
+    // Tính toán giảm giá theo cấp độ VIP của tài khoản hiện tại
+    let vipDiscount = 0;
+    let noticeEl = document.getElementById("vip-discount-notice");
+    if (current && current.vip === 'silver') {
+        vipDiscount = 0.10; // Giảm 10%
+        noticeEl.innerText = "⭐ Đã áp dụng đặc quyền VIP Bạc: Giảm 10%";
+    } else if (current && current.vip === 'gold') {
+        vipDiscount = 0.20; // Giảm 20%
+        noticeEl.innerText = "⭐ Đã áp dụng đặc quyền VIP Vàng: Giảm 20%";
+    } else {
+        noticeEl.innerText = "";
+    }
+
+    // Ưu tiên mức giảm cao nhất giữa Voucher mã code và VIP (hoặc cộng dồn tùy ý, ở đây chọn mức giảm lớn nhất)
+    let totalDiscountRate = Math.max(discountRate, vipDiscount);
+    let finalPrice = total * (1 - totalDiscountRate);
     document.getElementById("cart-total-price").innerText = finalPrice.toLocaleString() + "đ";
 }
 
@@ -643,7 +790,7 @@ async function renderAdminLists() {
     let vouchers = getLocalVouchers();
     document.getElementById("admin-voucher-list").innerHTML = vouchers.map((v, idx) => `
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:6px; border-radius:6px; margin-bottom:4px;">
-            <span><b>${v.code}</b> (-${v.rate}%)</span>
+            <span><b>${v.code}</b> (-${v.rate}%) - Hạn: ${v.expiry.replace('T', ' ')}</span>
             <button class="btn-action" style="padding:2px 6px; background:var(--danger-color); color:#fff;" onclick="deleteVoucher(${idx})">Xóa</button>
         </div>
     `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có mã giảm giá.</p>";
