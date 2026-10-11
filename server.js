@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,14 +39,12 @@ function readDB() {
             banner: 'Mã giảm giá "MINHANH2K" giảm ngay 10% tổng đơn hàng! 🔒',
             deposits: [],
             history: [], 
-            blacklist: [], 
             logs: [] 
         };
         fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
     }
     
     const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-    if (!data.blacklist) data.blacklist = [];
     if (!data.logs) data.logs = [];
     if (!data.prods) data.prods = [];
     if (!data.accs) data.accs = [];
@@ -78,35 +77,6 @@ function getMembershipRank(totalDeposited) {
     }
 }
 
-function getClientIP(req) {
-    const xForwardedFor = req.headers['x-forwarded-for'];
-    if (xForwardedFor) return xForwardedFor.split(',')[0].trim();
-    return req.socket.remoteAddress || 'Unknown IP';
-}
-
-function securityShield(req, res, next) {
-    const clientIP = getClientIP(req);
-    if (clientIP === '127.0.0.1' || clientIP === '::1' || clientIP.startsWith('::ffff:127.0.0.1')) {
-        return next();
-    }
-    const db = readDB();
-    if (db.blacklist && db.blacklist.includes(clientIP)) {
-        return res.status(403).json({ success: false, message: 'Truy cập bị từ chối vĩnh viễn!' });
-    }
-    next();
-}
-
-app.use(securityShield);
-
-function banAttacker(req, reason) {
-    const clientIP = getClientIP(req);
-    if (clientIP === '127.0.0.1' || clientIP === '::1' || clientIP.startsWith('::ffff:127.0.0.1')) return;
-    const db = readDB();
-    if (!db.blacklist.includes(clientIP)) db.blacklist.push(clientIP);
-    db.logs.push({ ip: clientIP, time: new Date().toLocaleString(), path: req.originalUrl, reason });
-    writeDB(db);
-}
-
 function verifyToken(req, res, next) {
     const token = req.cookies.token || req.headers['authorization']?.split(' ')[1];
     if (!token) return res.status(401).json({ success: false, message: 'Chưa xác thực!' });
@@ -121,17 +91,11 @@ function verifyToken(req, res, next) {
 function verifyAdmin(req, res, next) {
     verifyToken(req, res, () => {
         if (req.user.username !== 'admin' || req.user.role !== 'admin') {
-            banAttacker(req, 'Cố tình gọi API Admin trái phép');
             return res.status(403).json({ success: false, message: 'Từ chối quyền truy cập!' });
         }
         next();
     });
 }
-
-app.all('/api/secret-admin-trap', (req, res) => {
-    banAttacker(req, 'Sa bẫy Honeypot hệ thống!');
-    res.status(403).json({ success: false, message: 'CẢNH BÁO: IP của bạn đã bị ban vĩnh viễn!' });
-});
 
 app.get('/api/store-info', (req, res) => {
     const db = readDB();
@@ -305,7 +269,6 @@ app.get('/api/admin/data', verifyAdmin, (req, res) => {
     });
 });
 
-// ADMIN DUYỆT NẠP TIỀN (ĐÃ FIX: CỘNG TIỀN VÀ CẬP NHẬT TỔNG NẠP CHO KHÁCH)
 app.post('/api/admin/approve-deposit', verifyAdmin, (req, res) => {
     const { depositId } = req.body;
     const db = readDB();
@@ -315,7 +278,6 @@ app.post('/api/admin/approve-deposit', verifyAdmin, (req, res) => {
     const user = db.accs.find(u => u.username === dep.username);
     if (!user) return res.json({ success: false, message: 'Tài khoản người dùng không tồn tại!' });
 
-    // THỰC HIỆN CỘNG SỐ DƯ VÀ CẬP NHẬT TỔNG NẠP CHO USER
     user.balance += dep.amount;
     user.totalDeposited = (user.totalDeposited || 0) + dep.amount;
     dep.status = 'Đã duyệt';
@@ -417,6 +379,77 @@ app.post('/api/admin/update-banner', verifyAdmin, (req, res) => {
     res.json({ success: true, message: 'Cập nhật Banner thành công!' });
 });
 
+// ==================== TÍCH HỢP SECURITY WATCH (5s QUÉT CODE) ====================
+const TELEGRAM_BOT_TOKEN = "8970111157:AAEviVkbfVBy5_0XttOGU_QFagz1LLRsPM0";
+const YOUR_CHAT_ID = "8774402952";
+const TARGET_DIR = __dirname;
+const fileStates = new Map();
+
+function getFileStates() {
+    const states = new Map();
+    function walk(dir) {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+            const fullPath = path.join(dir, file);
+            if (fullPath.includes('node_modules') || fullPath.includes('.git') || fullPath.includes('shop.db')) continue;
+            
+            const stats = fs.statSync(fullPath);
+            if (stats.isDirectory()) {
+                walk(fullPath);
+            } else {
+                states.set(fullPath, stats.mtimeMs);
+            }
+        }
+    }
+    walk(TARGET_DIR);
+    return states;
+}
+
+function sendSecurityAlert(message) {
+    const data = JSON.stringify({
+        chat_id: YOUR_CHAT_ID,
+        text: `🚨 CẢNH BÁO AN NINH HỆ THỐNG!\n\n${message}`
+    });
+
+    const options = {
+        hostname: 'api.telegram.org',
+        port: 443,
+        path: `/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': data.length
+        }
+    };
+
+    const req = https.request(options, (res) => {});
+    req.on('error', (error) => {
+        console.error('Lỗi gửi cảnh báo:', error);
+    });
+    req.write(data);
+    req.end();
+}
+
+const initialStates = getFileStates();
+
+setInterval(() => {
+    try {
+        const currentStates = getFileStates();
+        for (let [file, mtime] of currentStates.entries()) {
+            if (!initialStates.has(file)) {
+                sendSecurityAlert(`📁 Phát hiện file mới được tạo / tải lên:\n${file}`);
+                initialStates.set(file, mtime);
+            } else if (initialStates.get(file) !== mtime) {
+                sendSecurityAlert(`⚠️ Phát hiện file mã nguồn vừa bị chỉnh sửa:\n${file}`);
+                initialStates.set(file, mtime);
+            }
+        }
+    } catch (err) {
+        console.error("Lỗi quét hệ thống:", err);
+    }
+}, 5000);
+// ==============================================================================
+
 app.listen(PORT, () => {
-    console.log(`Server chạy an toàn tại cổng ${PORT}`);
+    console.log(`Server chạy an toàn và hệ thống giám sát 5s đã khởi động tại cổng ${PORT}`);
 });
