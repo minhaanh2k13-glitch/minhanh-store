@@ -1,11 +1,12 @@
 {
   "name": "minhanh-store",
   "version": "1.0.0",
-  "description": "Secure MinhAnh Store Backend",
+  "description": "Cổng Quản Trị & Cửa Hàng Số Bảo Mật Cao",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
+  "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
