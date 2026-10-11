@@ -7,19 +7,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding: 20px; min-height: 100vh; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 700px; }
+        body { background: #0f172a; color: #f8fafc; padding: 25px; min-height: 100vh; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 750px; }
         
-        /* Hiệu ứng chuyển động mượt mà cho Banner */
+        /* Banner động */
         .banner { 
             background: linear-gradient(135deg, #1e293b, #0f172a); 
             border: 1px dashed #38bdf8; 
-            padding: 14px; 
-            border-radius: 10px; 
+            padding: 16px; 
+            border-radius: 12px; 
             text-align: center; 
             color: #38bdf8; 
             font-size: 14px; 
-            margin-bottom: 20px; 
+            margin-bottom: 25px; 
             font-weight: 500; 
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
             animation: pulseGlow 3s infinite alternate;
@@ -30,28 +30,43 @@
             100% { border-color: #f59e0b; box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
         }
 
-        .nav-tabs { display: flex; gap: 6px; margin-bottom: 20px; background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid #334155; overflow-x: auto; }
-        .tab-btn { flex: 1; padding: 10px 8px; background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 12px; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; text-align: center; }
-        .tab-btn:hover { color: #f8fafc; background: rgba(56, 189, 248, 0.1); }
-        .tab-btn.active { background: #0284c7; color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4); }
+        /* Header chứa tên shop và thanh tab cân đối, rộng rãi */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 
-        .card { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: 0.3s; }
-        .header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        
         .logo-text {
             background: linear-gradient(90deg, #38bdf8, #818cf8, #f59e0b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 700;
-            font-size: 20px;
+            font-size: 22px;
+            letter-spacing: 0.5px;
         }
 
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-size: 13px; color: #94a3b8; }
-        input, select { width: 100%; padding: 11px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: white; font-size: 14px; transition: 0.2s; }
+        .nav-tabs { display: flex; gap: 8px; overflow-x: auto; }
+        .tab-btn { padding: 10px 14px; background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 13px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; text-align: center; }
+        .tab-btn:hover { color: #f8fafc; background: rgba(56, 189, 248, 0.1); }
+        .tab-btn.active { background: #0284c7; color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4); }
+
+        .card { background: #1e293b; border: 1px solid #334155; padding: 25px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: 0.3s; }
+        
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 8px; font-size: 13px; color: #94a3b8; font-weight: 500; }
+        input, select { width: 100%; padding: 12px 14px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: white; font-size: 14px; transition: 0.2s; }
         input:focus { border-color: #38bdf8; outline: none; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
         
-        button { padding: 11px 16px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        button { padding: 12px 18px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
         button:hover { background: #0ea5e9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); }
         
         .btn-danger { background: #e11d48; }
@@ -63,9 +78,21 @@
         .btn-warning { background: #f59e0b; color: white; }
         .btn-warning:hover { background: #d97706; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
 
-        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .item-box { background: #0f172a; border: 1px solid #334155; padding: 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: 0.2s; }
-        .item-box:hover { border-color: #475569; transform: translateX(2px); }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+        
+        /* Nới rộng khoảng cách, làm các hàng sản phẩm thoáng và rộng hơn */
+        .item-box { 
+            background: #0f172a; 
+            border: 1px solid #334155; 
+            padding: 20px; 
+            border-radius: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 12px; 
+            transition: 0.25s; 
+        }
+        .item-box:hover { border-color: #38bdf8; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
         
         .hidden { display: none; }
         .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #334155; color: #38bdf8; }
@@ -73,9 +100,9 @@
         .vip-box { 
             background: linear-gradient(135deg, #0f172a, #1e293b); 
             border: 1px solid #475569; 
-            padding: 15px; 
-            border-radius: 10px; 
-            margin-bottom: 15px; 
+            padding: 18px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
         }
     </style>
@@ -86,26 +113,25 @@
     <!-- Banner động -->
     <div class="banner" id="main-banner">Đang tải thông báo...</div>
 
-    <div class="header-title">
+    <!-- Header cân đối: Tên shop bên trái, Menu tab bên phải rộng rãi -->
+    <div class="header-section">
         <h3 class="logo-text">⚡ MinhAnh Store</h3>
-    </div>
-
-    <!-- MENU TAB -->
-    <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('shop')">🛒 Cửa Hàng</button>
-        <button class="tab-btn" onclick="switchTab('profile')">👤 Tài Khoản</button>
-        <button class="tab-btn" onclick="switchTab('deposits')">💰 Dòng Tiền</button>
-        <button class="tab-btn" onclick="switchTab('purchased')">📦 Đã Mua</button>
-        <button class="tab-btn hidden" id="tab-admin-btn" onclick="switchTab('admin')">🛠️ Quản Trị</button>
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('shop')">🛒 Cửa Hàng</button>
+            <button class="tab-btn" onclick="switchTab('profile')">👤 Tài Khoản</button>
+            <button class="tab-btn" onclick="switchTab('deposits')">💰 Dòng Tiền</button>
+            <button class="tab-btn" onclick="switchTab('purchased')">📦 Đã Mua</button>
+            <button class="tab-btn hidden" id="tab-admin-btn" onclick="switchTab('admin')">🛠️ Quản Trị</button>
+        </div>
     </div>
 
     <!-- TAB 1: CỬA HÀNG -->
     <div id="tab-shop" class="card">
-        <h3 style="color: #38bdf8; margin-bottom: 12px;">Sản Phẩm Số & Ưu Đãi VIP</h3>
+        <h3 style="color: #38bdf8; margin-bottom: 15px; font-size: 18px;">Sản Phẩm Số & Ưu Đãi VIP</h3>
         <div id="vip-notice" class="vip-box hidden">
-            <p style="font-size: 13px; color: #cbd5e1;">Cấp bậc hội viên: <b id="shop-vip-name" style="color: #f59e0b;">Đồng</b> (Giảm tự động <b id="shop-vip-discount">0</b>% khi mua hàng!)</p>
+            <p style="font-size: 14px; color: #cbd5e1;">Cấp bậc hội viên: <b id="shop-vip-name" style="color: #f59e0b;">Đồng</b> (Giảm tự động <b id="shop-vip-discount">0</b>% khi mua hàng!)</p>
         </div>
-        <div class="form-group" style="margin-bottom: 15px;">
+        <div class="form-group" style="margin-bottom: 20px;">
             <label>Mã giảm giá (Coupon)</label>
             <input type="text" id="inputCoupon" placeholder="Nhập mã giảm giá...">
         </div>
@@ -117,7 +143,7 @@
     <!-- TAB 2: TÀI KHOẢN & NẠP TIỀN -->
     <div id="tab-profile" class="card hidden">
         <div id="login-section">
-            <h3 style="margin-bottom: 15px; color: #38bdf8;">Đăng Nhập Hệ Thống</h3>
+            <h3 style="margin-bottom: 15px; color: #38bdf8; font-size: 18px;">Đăng Nhập Hệ Thống</h3>
             <div class="form-group"><label>Tài khoản</label><input type="text" id="username" placeholder="Nhập tài khoản..."></div>
             <div class="form-group"><label>Mật khẩu</label><input type="password" id="password" placeholder="Nhập mật khẩu..."></div>
             <div class="form-group hidden" id="otp-group"><label>Mã Google Authenticator</label><input type="text" id="otpToken" placeholder="Mã 6 số..."></div>
@@ -125,37 +151,45 @@
         </div>
 
         <div id="user-info-section" class="hidden">
-            <h3 style="color: #38bdf8; margin-bottom: 12px;">Thông tin tài khoản & Hội viên</h3>
-            <p style="font-size: 14px; margin-bottom: 6px;">Tài khoản: <b id="disp-username" style="color: #f1f5f9;"></b></p>
-            <p style="font-size: 14px; margin-bottom: 6px;">Quyền hạn: <span id="disp-role" class="badge"></span></p>
-            <p style="font-size: 14px; margin-bottom: 6px;">Cấp bậc hội viên: <b id="disp-rank" style="color: #f59e0b;">Đồng (Free)</b></p>
-            <p style="font-size: 14px; margin-bottom: 15px;">Số dư: <b id="disp-balance" style="color: #4ade80;">0</b>đ</p>
+            <h3 style="color: #38bdf8; margin-bottom: 15px; font-size: 18px;">Thông tin tài khoản & Hội viên</h3>
+            <p style="font-size: 14px; margin-bottom: 8px;">Tài khoản: <b id="disp-username" style="color: #f1f5f9;"></b></p>
+            <p style="font-size: 14px; margin-bottom: 8px;">Quyền hạn: <span id="disp-role" class="badge"></span></p>
+            <p style="font-size: 14px; margin-bottom: 8px;">Cấp bậc hội viên: <b id="disp-rank" style="color: #f59e0b;">Đồng (Free)</b></p>
+            <p style="font-size: 14px; margin-bottom: 20px;">Số dư: <b id="disp-balance" style="color: #4ade80; font-size: 16px;">0</b>đ</p>
 
-            <!-- Nút Đăng Xuất được tích hợp gọn gàng, đẹp mắt ngay trong tab Tài Khoản -->
             <div style="margin-bottom: 20px;">
                 <button class="btn-danger" onclick="logout()" style="width: 100%;">🚪 Đăng Xuất Tài Khoản</button>
             </div>
 
             <div class="vip-box" style="border-color: #10b981;">
-                <h4 style="color: #10b981; font-size: 14px; margin-bottom: 6px;">💳 Gửi Yêu Cầu Nạp Tiền</h4>
-                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Nhập số tiền bạn muốn nạp:</p>
-                <div class="form-group" style="margin-bottom: 8px;">
+                <h4 style="color: #10b981; font-size: 15px; margin-bottom: 8px;">💳 Gửi Yêu Cầu Nạp Tiền</h4>
+                <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Nhập số tiền bạn muốn nạp:</p>
+                <div class="form-group" style="margin-bottom: 10px;">
                     <input type="number" id="customAmount" placeholder="Nhập số tiền (VD: 50000)..." min="1000" step="1000">
                 </div>
-                <button class="btn-success" onclick="requestDeposit()" style="width: 100%;">Gửi Yêu Cầu Nạp Tiền</button>
+                <button class="btn-success" onclick="requestDeposit()" style="width: 100%; margin-bottom: 15px;">Gửi Yêu Cầu Nạp Tiền</button>
+
+                <!-- THÔNG TIN CHUYỂN KHOẢN & QR -->
+                <div style="background: #0f172a; padding: 15px; border-radius: 10px; border: 1px dashed #10b981; text-align: center;">
+                    <p style="font-size: 13px; color: #38bdf8; font-weight: 600; margin-bottom: 10px;">Quét QR Chuyển Khoản Ngân Hàng</p>
+                    <img src="qr-bank.png" alt="QR VietinBank" style="max-width: 150px; background: white; padding: 6px; border-radius: 8px; margin-bottom: 10px;">
+                    <p style="font-size: 13px; color: #cbd5e1;">Ngân hàng: <b>VietinBank</b></p>
+                    <p style="font-size: 13px; color: #cbd5e1;">Chủ TK: <b>LE QUANG TUAN</b></p>
+                    <p style="font-size: 13px; color: #4ade80; font-family: monospace; font-weight: bold; font-size: 14px; margin-top: 6px;">STK: 999962183939</p>
+                </div>
             </div>
 
-            <h3 style="color: #38bdf8; margin-bottom: 10px; font-size: 15px;">Bảo mật Google Authenticator (2FA)</h3>
-            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Trạng thái: <b id="fa-status" style="color: #f43f5e;">Đang tắt</b></p>
+            <h3 style="color: #38bdf8; margin-bottom: 12px; font-size: 16px;">Bảo mật Google Authenticator (2FA)</h3>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Trạng thái: <b id="fa-status" style="color: #f43f5e;">Đang tắt</b></p>
             <button id="btn-setup-2fa" onclick="setup2FA()">Bật 2FA</button>
             <div id="qr-box" class="hidden" style="margin-top: 15px; text-align: center;">
-                <img id="qr-img" src="" alt="QR" style="background: white; padding: 5px; border-radius: 8px; max-width: 150px;">
-                <div class="form-group" style="margin-top: 10px;"><input type="text" id="verifyOtp" placeholder="Nhập mã 6 số..."></div>
+                <img id="qr-img" src="" alt="QR" style="background: white; padding: 6px; border-radius: 8px; max-width: 150px;">
+                <div class="form-group" style="margin-top: 12px;"><input type="text" id="verifyOtp" placeholder="Nhập mã 6 số..."></div>
                 <button class="btn-success" onclick="verify2FA()">Xác Nhận</button>
             </div>
 
-            <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
-            <h3 style="color: #38bdf8; margin-bottom: 10px; font-size: 15px;">Đổi mật khẩu</h3>
+            <hr style="border: 0; border-top: 1px solid #334155; margin: 25px 0;">
+            <h3 style="color: #38bdf8; margin-bottom: 12px; font-size: 16px;">Đổi mật khẩu</h3>
             <div class="form-group"><input type="password" id="oldPass" placeholder="Mật khẩu cũ"></div>
             <div class="form-group"><input type="password" id="newPass" placeholder="Mật khẩu mới"></div>
             <button onclick="changePassword()">Lưu mật khẩu mới</button>
@@ -164,7 +198,7 @@
 
     <!-- TAB 3: LỊCH SỬ DÒNG TIỀN -->
     <div id="tab-deposits" class="card hidden">
-        <h3 style="color: #38bdf8; margin-bottom: 12px;">💰 Lịch Sử Dòng Tiền (Nạp Tiền)</h3>
+        <h3 style="color: #38bdf8; margin-bottom: 15px; font-size: 18px;">💰 Lịch Sử Dòng Tiền (Nạp Tiền)</h3>
         <div id="user-deposit-history" class="grid">
             <p style="color: #94a3b8;">Vui lòng đăng nhập để xem lịch sử dòng tiền.</p>
         </div>
@@ -172,60 +206,60 @@
 
     <!-- TAB 4: ĐÃ MUA -->
     <div id="tab-purchased" class="card hidden">
-        <h3 style="color: #38bdf8; margin-bottom: 12px;">Sản Phẩm Đã Mua</h3>
+        <h3 style="color: #38bdf8; margin-bottom: 15px; font-size: 18px;">Sản Phẩm Đã Mua</h3>
         <div id="history-list" class="grid"><p style="color: #94a3b8;">Vui lòng đăng nhập.</p></div>
     </div>
 
     <!-- TAB 5: QUẢN TRỊ ADMIN -->
     <div id="tab-admin" class="card hidden" style="border-color: #f59e0b;">
-        <h3 style="color: #f59e0b; margin-bottom: 15px;">🛠️ Bảng Điều Khiển Quản Trị Viên</h3>
+        <h3 style="color: #f59e0b; margin-bottom: 20px; font-size: 18px;">🛠️ Bảng Điều Khiển Quản Trị Viên</h3>
         
-        <h4 style="color: #38bdf8; font-size: 14px; margin-bottom: 8px;">⏳ Yêu cầu nạp tiền đang chờ duyệt:</h4>
-        <div id="admin-deposit-list" style="margin-bottom: 20px;"></div>
+        <h4 style="color: #38bdf8; font-size: 15px; margin-bottom: 10px;">⏳ Yêu cầu nạp tiền đang chờ duyệt:</h4>
+        <div id="admin-deposit-list" style="margin-bottom: 25px;"></div>
 
-        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 25px 0;">
 
         <div class="form-group">
             <label style="color: #38bdf8;">Chỉnh sửa Banner thông báo trang chủ</label>
             <input type="text" id="bannerInput" placeholder="Nội dung banner...">
-            <button class="btn-success" onclick="updateBanner()" style="margin-top: 8px;">Cập Nhật Banner</button>
+            <button class="btn-success" onclick="updateBanner()" style="margin-top: 10px;">Cập Nhật Banner</button>
         </div>
 
-        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 25px 0;">
 
         <div class="form-group">
             <label style="color: #38bdf8;">Tạo tài khoản người dùng mới</label>
-            <input type="text" id="newAccUser" placeholder="Tên đăng nhập..." style="margin-bottom: 8px;">
-            <input type="password" id="newAccPass" placeholder="Mật khẩu..." style="margin-bottom: 8px;">
-            <input type="number" id="newAccBal" placeholder="Số dư ban đầu (VNĐ)..." style="margin-bottom: 8px;">
+            <input type="text" id="newAccUser" placeholder="Tên đăng nhập..." style="margin-bottom: 10px;">
+            <input type="password" id="newAccPass" placeholder="Mật khẩu..." style="margin-bottom: 10px;">
+            <input type="number" id="newAccBal" placeholder="Số dư ban đầu (VNĐ)..." style="margin-bottom: 10px;">
             <button class="btn-success" onclick="createUser()">Tạo Tài Khoản</button>
         </div>
 
-        <h4 style="color: #94a3b8; font-size: 14px; margin: 15px 0 8px 0;">Danh sách người dùng hệ thống:</h4>
-        <div id="admin-user-list" style="margin-bottom: 20px;"></div>
+        <h4 style="color: #94a3b8; font-size: 15px; margin: 20px 0 10px 0;">Danh sách người dùng hệ thống:</h4>
+        <div id="admin-user-list" style="margin-bottom: 25px;"></div>
 
-        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 25px 0;">
 
         <div class="form-group">
             <label style="color: #38bdf8;">Thêm sản phẩm mới</label>
-            <input type="text" id="pName" placeholder="Tên vật phẩm..." style="margin-bottom: 8px;">
-            <input type="number" id="pPrice" placeholder="Giá tiền (VNĐ)..." style="margin-bottom: 8px;">
+            <input type="text" id="pName" placeholder="Tên vật phẩm..." style="margin-bottom: 10px;">
+            <input type="number" id="pPrice" placeholder="Giá tiền (VNĐ)..." style="margin-bottom: 10px;">
             <button class="btn-success" onclick="addProduct()">Thêm Sản Phẩm</button>
         </div>
 
-        <h4 style="color: #94a3b8; font-size: 14px; margin: 15px 0 8px 0;">Quản lý sản phẩm hiện có (Sửa / Xóa):</h4>
-        <div id="admin-product-list" style="margin-bottom: 20px;"></div>
+        <h4 style="color: #94a3b8; font-size: 15px; margin: 20px 0 10px 0;">Quản lý sản phẩm hiện có (Sửa / Xóa):</h4>
+        <div id="admin-product-list" style="margin-bottom: 25px;"></div>
 
-        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 25px 0;">
 
         <div class="form-group">
             <label style="color: #38bdf8;">Tạo mã giảm giá mới</label>
-            <input type="text" id="couponCode" placeholder="Mã (VD: SALE50)..." style="margin-bottom: 8px; text-transform: uppercase;">
-            <input type="number" id="couponDisc" placeholder="Giảm giá %..." style="margin-bottom: 8px;">
+            <input type="text" id="couponCode" placeholder="Mã (VD: SALE50)..." style="margin-bottom: 10px; text-transform: uppercase;">
+            <input type="number" id="couponDisc" placeholder="Giảm giá %..." style="margin-bottom: 10px;">
             <button class="btn-success" onclick="addCoupon()">Tạo Mã Giảm Giá</button>
         </div>
 
-        <h4 style="color: #94a3b8; font-size: 14px; margin: 15px 0 8px 0;">Danh sách mã giảm giá:</h4>
+        <h4 style="color: #94a3b8; font-size: 15px; margin: 20px 0 10px 0;">Danh sách mã giảm giá:</h4>
         <div id="admin-coupon-list"></div>
     </div>
 </div>
@@ -275,8 +309,8 @@
                     list.innerHTML += `
                         <div class="item-box">
                             <div>
-                                <div style="font-weight: 600; color: #f1f5f9; font-size: 15px; margin-bottom: 4px;">${p.name}</div>
-                                <div style="color: #4ade80; font-weight: bold; font-size: 14px;">${p.price.toLocaleString()} VNĐ</div>
+                                <div style="font-weight: 600; color: #f1f5f9; font-size: 16px; margin-bottom: 6px;">${p.name}</div>
+                                <div style="color: #4ade80; font-weight: bold; font-size: 15px;">${p.price.toLocaleString()} VNĐ</div>
                             </div>
                             <button class="btn-success" onclick="buyProduct('${p.id}')">Mua Ngay</button>
                         </div>
@@ -328,10 +362,10 @@
                     depList.innerHTML += `
                         <div class="item-box">
                             <div>
-                                <div style="font-weight: 600; color: #f1f5f9; font-size: 14px;">Nạp tiền: +${d.amount.toLocaleString()}đ</div>
+                                <div style="font-weight: 600; color: #f1f5f9; font-size: 15px; margin-bottom: 4px;">Nạp tiền: +${d.amount.toLocaleString()}đ</div>
                                 <div style="font-size: 12px; color: #94a3b8;">Thời gian: ${d.time}</div>
                             </div>
-                            <div style="font-weight: bold; color: ${statusColor}; font-size: 13px;">${d.status}</div>
+                            <div style="font-weight: bold; color: ${statusColor}; font-size: 14px;">${d.status}</div>
                         </div>
                     `;
                 });
@@ -346,10 +380,10 @@
                     histList.innerHTML += `
                         <div class="item-box">
                             <div>
-                                <div style="font-weight: 600; color: #f1f5f9; font-size: 14px;">${h.productName} (VIP: ${h.vipRankApplied})</div>
+                                <div style="font-weight: 600; color: #f1f5f9; font-size: 15px; margin-bottom: 4px;">${h.productName} (VIP: ${h.vipRankApplied})</div>
                                 <div style="font-size: 12px; color: #94a3b8;">Thời gian: ${h.time}</div>
                             </div>
-                            <div style="color: #4ade80; font-weight: bold;">-${h.price.toLocaleString()}đ</div>
+                            <div style="color: #4ade80; font-weight: bold; font-size: 15px;">-${h.price.toLocaleString()}đ</div>
                         </div>
                     `;
                 });
@@ -471,11 +505,11 @@
                         <div class="item-box" style="border-color: #38bdf8;">
                             <div>
                                 <b>@${d.username}</b> muốn nạp <span style="color:#4ade80">${d.amount.toLocaleString()}đ</span>
-                                <div style="font-size: 11px; color: #94a3b8;">Thời gian: ${d.time}</div>
+                                <div style="font-size: 12px; color: #94a3b8; margin-top: 3px;">Thời gian: ${d.time}</div>
                             </div>
-                            <div>
-                                <button class="btn-success" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="approveDeposit('${d.id}')">Duyệt</button>
-                                <button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="rejectDeposit('${d.id}')">Hủy</button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-success" style="padding: 6px 14px; font-size: 13px;" onclick="approveDeposit('${d.id}')">Duyệt</button>
+                                <button class="btn-danger" style="padding: 6px 14px; font-size: 13px;" onclick="rejectDeposit('${d.id}')">Hủy</button>
                             </div>
                         </div>
                     `;
@@ -490,7 +524,7 @@
                 uList.innerHTML += `
                     <div class="item-box">
                         <div><b>@${u.username}</b> - Số dư: <span style="color:#4ade80">${u.balance.toLocaleString()}đ</span> (Nạp: ${u.totalDeposited.toLocaleString()}đ)</div>
-                        ${u.username !== 'admin' ? `<button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="banUser('${u.username}')">Ban Nick</button>` : ''}
+                        ${u.username !== 'admin' ? `<button class="btn-danger" style="padding: 6px 14px; font-size: 13px;" onclick="banUser('${u.username}')">Ban Nick</button>` : ''}
                     </div>
                 `;
             });
@@ -503,9 +537,9 @@
                         <div>
                             <b>${p.name}</b> - <span style="color:#4ade80">${p.price.toLocaleString()}đ</span>
                         </div>
-                        <div>
-                            <button class="btn-warning" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="editProduct('${p.id}', '${p.name}', ${p.price})">Sửa</button>
-                            <button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteProduct('${p.id}')">Xóa</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-warning" style="padding: 6px 14px; font-size: 13px;" onclick="editProduct('${p.id}', '${p.name}', ${p.price})">Sửa</button>
+                            <button class="btn-danger" style="padding: 6px 14px; font-size: 13px;" onclick="deleteProduct('${p.id}')">Xóa</button>
                         </div>
                     </div>
                 `;
@@ -517,7 +551,7 @@
                 cList.innerHTML += `
                     <div class="item-box">
                         <div>Mã: <b style="color: #38bdf8">${c.code}</b> (Giảm ${c.discountPercent}%)</div>
-                        <button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteCoupon('${c.code}')">Xóa</button>
+                        <button class="btn-danger" style="padding: 6px 14px; font-size: 13px;" onclick="deleteCoupon('${c.code}')">Xóa</button>
                     </div>
                 `;
             });
@@ -665,11 +699,6 @@
         const data = await res.json();
         alert(data.message);
         if (data.success) loadAdminData();
-    }
-
-    async function logout() {
-        await fetch('/api/logout', { method: 'POST' });
-        location.reload();
     }
 
     init();
