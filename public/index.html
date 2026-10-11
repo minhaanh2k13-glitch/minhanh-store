@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MinhAnh Store - Cổng Quản Trị & Cửa Hàng Số</title>
+    <title>MinhAnh Store - Cửa Hàng Số & Hội Viên VIP</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: #0f172a; color: #f8fafc; padding: 20px; min-height: 100vh; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 650px; }
+        .container { width: 100%; max-width: 700px; }
         .banner { background: #1e293b; border: 1px dashed #38bdf8; padding: 12px; border-radius: 8px; text-align: center; color: #38bdf8; font-size: 14px; margin-bottom: 20px; font-weight: 500; }
         
-        /* Navbar Tabs */
         .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid #334155; overflow-x: auto; }
         .tab-btn { flex: 1; padding: 10px; background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 13px; border-radius: 6px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-align: center; }
         .tab-btn.active { background: #0284c7; color: white; }
 
         .card { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .header-title h3 { color: #f8fafc; font-size: 18px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-size: 13px; color: #94a3b8; }
-        input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px; }
         input:focus { border-color: #38bdf8; outline: none; }
         button { padding: 10px 16px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         button:hover { background: #0ea5e9; }
@@ -30,17 +28,16 @@
         .btn-success { background: #10b981; }
         .btn-success:hover { background: #059669; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .product-item, .history-item { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .item-box { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .hidden { display: none; }
         .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; background: #334155; color: #38bdf8; }
+        .vip-box { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="banner">
-        Mã giảm giá "MINHANH2K" giảm ngay 10% tổng đơn hàng! 🔒
-    </div>
+    <div class="banner" id="main-banner">Đang tải thông báo...</div>
 
     <div class="header-title">
         <h3 style="color: #38bdf8;">⚡ MinhAnh Store</h3>
@@ -49,96 +46,134 @@
         </div>
     </div>
 
-    <!-- THANH MENU TAB CHUYỂN HƯỚNG -->
+    <!-- MENU TAB -->
     <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchTab('shop')">🛒 Cửa Hàng</button>
-        <button class="tab-btn" onclick="switchTab('profile')">👤 Tài Khoản</button>
+        <button class="tab-btn" onclick="switchTab('profile')">👤 Tài Khoản & Nạp Tiền</button>
         <button class="tab-btn" onclick="switchTab('purchased')">📦 Đã Mua</button>
         <button class="tab-btn hidden" id="tab-admin-btn" onclick="switchTab('admin')">🛠️ Quản Trị</button>
     </div>
 
     <!-- TAB 1: CỬA HÀNG -->
     <div id="tab-shop" class="card">
-        <h3 style="color: #38bdf8; margin-bottom: 12px;">Sản Phẩm Số Nổi Bật</h3>
+        <h3 style="color: #38bdf8; margin-bottom: 12px;">Sản Phẩm Số & Ưu Đãi VIP</h3>
+        <div id="vip-notice" class="vip-box hidden">
+            <p style="font-size: 13px; color: #cbd5e1;">Cấp bậc hội viên: <b id="shop-vip-name" style="color: #f59e0b;">Đồng</b> (Giảm tự động <b id="shop-vip-discount">0</b>% khi mua hàng!)</p>
+        </div>
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label>Mã giảm giá (Coupon)</label>
+            <input type="text" id="inputCoupon" placeholder="Nhập mã giảm giá...">
+        </div>
         <div id="product-list" class="grid">
             <p style="color: #94a3b8;">Đang tải sản phẩm...</p>
         </div>
     </div>
 
-    <!-- TAB 2: TÀI KHOẢN CỦA TÔI -->
+    <!-- TAB 2: TÀI KHOẢN & NẠP TIỀN -->
     <div id="tab-profile" class="card hidden">
-        <!-- Khu vực đăng nhập nếu chưa login -->
         <div id="login-section">
             <h3 style="margin-bottom: 15px; color: #38bdf8;">Đăng Nhập Hệ Thống</h3>
-            <div class="form-group">
-                <label>Tên đăng nhập</label>
-                <input type="text" id="username" placeholder="Nhập tài khoản...">
-            </div>
-            <div class="form-group">
-                <label>Mật khẩu</label>
-                <input type="password" id="password" placeholder="Nhập mật khẩu...">
-            </div>
-            <div class="form-group hidden" id="otp-group">
-                <label>Mã Google Authenticator (6 số)</label>
-                <input type="text" id="otpToken" placeholder="Nhập mã OTP từ app...">
-            </div>
+            <div class="form-group"><label>Tài khoản</label><input type="text" id="username" placeholder="Nhập tài khoản..."></div>
+            <div class="form-group"><label>Mật khẩu</label><input type="password" id="password" placeholder="Nhập mật khẩu..."></div>
+            <div class="form-group hidden" id="otp-group"><label>Mã Google Authenticator</label><input type="text" id="otpToken" placeholder="Mã 6 số..."></div>
             <button onclick="login()" style="width: 100%;">Đăng Nhập</button>
         </div>
 
-        <!-- Thông tin sau khi đăng nhập -->
         <div id="user-info-section" class="hidden">
-            <h3 style="color: #38bdf8; margin-bottom: 12px;">Thông tin tài khoản</h3>
+            <h3 style="color: #38bdf8; margin-bottom: 12px;">Thông tin tài khoản & Hội viên</h3>
             <p style="font-size: 14px; margin-bottom: 6px;">Tài khoản: <b id="disp-username" style="color: #f1f5f9;"></b></p>
             <p style="font-size: 14px; margin-bottom: 6px;">Quyền hạn: <span id="disp-role" class="badge"></span></p>
-            <p style="font-size: 14px; margin-bottom: 12px;">Số dư: <b id="disp-balance" style="color: #4ade80;">0</b>đ</p>
-            <button class="btn-success" onclick="alert('Vui lòng liên hệ Admin để nạp số dư!')" style="margin-bottom: 20px;">Nạp tiền ngay</button>
+            <p style="font-size: 14px; margin-bottom: 6px;">Cấp bậc hội viên: <b id="disp-rank" style="color: #f59e0b;">Đồng (Free)</b></p>
+            <p style="font-size: 14px; margin-bottom: 15px;">Số dư: <b id="disp-balance" style="color: #4ade80;">0</b>đ</p>
 
-            <h3 style="color: #38bdf8; margin-bottom: 12px; font-size: 16px;">Bảo mật Google Authenticator (2FA)</h3>
-            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Trạng thái: <b id="fa-status" style="color: #f43f5e;">Đang tắt</b></p>
-            <button id="btn-setup-2fa" onclick="setup2FA()">Bật Google Authenticator</button>
-            
-            <div id="qr-box" class="hidden" style="margin-top: 15px; text-align: center;">
-                <p style="font-size: 13px; margin-bottom: 10px;">Quét mã QR bằng ứng dụng Authenticator:</p>
-                <img id="qr-img" src="" alt="QR 2FA" style="background: white; padding: 5px; border-radius: 6px; max-width: 160px;">
-                <div class="form-group" style="margin-top: 10px;">
-                    <input type="text" id="verifyOtp" placeholder="Nhập mã 6 số xác nhận...">
+            <div class="vip-box" style="border-color: #10b981;">
+                <h4 style="color: #10b981; font-size: 14px; margin-bottom: 6px;">💳 Gửi Yêu Cầu Nạp Tiền</h4>
+                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Chọn số tiền nạp, hệ thống sẽ gửi lệnh chờ Admin duyệt tay:</p>
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <select id="selectAmount">
+                        <option value="25000">Nạp 25.000đ (Đạt hạng Bạc - Giảm 5%)</option>
+                        <option value="50000">Nạp 50.000đ (Đạt hạng Bạc - Giảm 5%)</option>
+                        <option value="100000">Nạp 100.000đ (Đạt hạng Vàng - Giảm 20%)</option>
+                        <option value="500000">Nạp 500.000đ (Đạt hạng Vàng - Giảm 20%)</option>
+                    </select>
                 </div>
-                <button class="btn-success" onclick="verify2FA()">Xác Nhận Kích Hoạt</button>
+                <button class="btn-success" onclick="requestDeposit()" style="width: 100%;">Gửi Yêu Cầu Nạp Tiền</button>
+            </div>
+
+            <h3 style="color: #38bdf8; margin-bottom: 10px; font-size: 15px;">Bảo mật Google Authenticator (2FA)</h3>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Trạng thái: <b id="fa-status" style="color: #f43f5e;">Đang tắt</b></p>
+            <button id="btn-setup-2fa" onclick="setup2FA()">Bật 2FA</button>
+            <div id="qr-box" class="hidden" style="margin-top: 15px; text-align: center;">
+                <img id="qr-img" src="" alt="QR" style="background: white; padding: 5px; border-radius: 6px; max-width: 150px;">
+                <div class="form-group" style="margin-top: 10px;"><input type="text" id="verifyOtp" placeholder="Nhập mã 6 số..."></div>
+                <button class="btn-success" onclick="verify2FA()">Xác Nhận</button>
             </div>
 
             <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
-
-            <h3 style="color: #38bdf8; margin-bottom: 12px; font-size: 16px;">Đổi mật khẩu</h3>
+            <h3 style="color: #38bdf8; margin-bottom: 10px; font-size: 15px;">Đổi mật khẩu</h3>
             <div class="form-group"><input type="password" id="oldPass" placeholder="Mật khẩu cũ"></div>
             <div class="form-group"><input type="password" id="newPass" placeholder="Mật khẩu mới"></div>
             <button onclick="changePassword()">Lưu mật khẩu mới</button>
         </div>
     </div>
 
-    <!-- TAB 3: SẢN PHẨM ĐÃ MUA -->
+    <!-- TAB 3: ĐÃ MUA -->
     <div id="tab-purchased" class="card hidden">
-        <h3 style="color: #38bdf8; margin-bottom: 12px;">Lịch Sử Giao Dịch & Sản Phẩm Đã Mua</h3>
-        <div id="history-list" class="grid">
-            <p style="color: #94a3b8;">Vui lòng đăng nhập để xem lịch sử.</p>
-        </div>
+        <h3 style="color: #38bdf8; margin-bottom: 12px;">Sản Phẩm Đã Mua</h3>
+        <div id="history-list" class="grid"><p style="color: #94a3b8;">Vui lòng đăng nhập.</p></div>
     </div>
 
     <!-- TAB 4: QUẢN TRỊ ADMIN -->
     <div id="tab-admin" class="card hidden" style="border-color: #f59e0b;">
-        <h3 style="color: #f59e0b; margin-bottom: 12px;">Quản Trị Viên (Thêm sản phẩm)</h3>
-        <div class="form-group">
-            <input type="text" id="pName" placeholder="Tên sản phẩm mới...">
-        </div>
-        <div class="form-group">
-            <input type="number" id="pPrice" placeholder="Giá tiền (VNĐ)...">
-        </div>
-        <button class="btn-success" onclick="addProduct()">Thêm Sản Phẩm</button>
+        <h3 style="color: #f59e0b; margin-bottom: 15px;">🛠️ Bảng Điều Khiển Quản Trị Viên</h3>
         
-        <!-- Bẫy ngầm trong giao diện Admin để dụ hacker -->
-        <div style="margin-top: 30px; padding: 10px; background: #0f172a; border-radius: 6px; border: 1px dashed #ef4444;">
-            <p style="font-size: 11px; color: #ef4444; margin-bottom: 5px;">⚠️ Khu vực nhạy cảm tối mật (Dành riêng cho Root Admin):</p>
-            <a href="/api/secret-admin-trap" target="_blank" style="font-size: 12px; color: #38bdf8; text-decoration: underline;">Tải xuống Key Root Admin Gốc (Đừng bấm vào đây nếu không có quyền)</a>
+        <h4 style="color: #38bdf8; font-size: 14px; margin-bottom: 8px;">⏳ Yêu cầu nạp tiền đang chờ duyệt:</h4>
+        <div id="admin-deposit-list" style="margin-bottom: 20px;"></div>
+
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+
+        <div class="form-group">
+            <label style="color: #38bdf8;">Chỉnh sửa Banner thông báo trang chủ</label>
+            <input type="text" id="bannerInput" placeholder="Nội dung banner...">
+            <button class="btn-success" onclick="updateBanner()" style="margin-top: 8px;">Cập Nhật Banner</button>
         </div>
+
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+
+        <div class="form-group">
+            <label style="color: #38bdf8;">Tạo tài khoản người dùng mới</label>
+            <input type="text" id="newAccUser" placeholder="Tên đăng nhập..." style="margin-bottom: 8px;">
+            <input type="password" id="newAccPass" placeholder="Mật khẩu..." style="margin-bottom: 8px;">
+            <input type="number" id="newAccBal" placeholder="Số dư ban đầu (VNĐ)..." style="margin-bottom: 8px;">
+            <button class="btn-success" onclick="createUser()">Tạo Tài Khoản</button>
+        </div>
+
+        <h4 style="color: #94a3b8; font-size: 14px; margin: 15px 0 8px 0;">Danh sách người dùng hệ thống:</h4>
+        <div id="admin-user-list" style="margin-bottom: 20px;"></div>
+
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+
+        <div class="form-group">
+            <label style="color: #38bdf8;">Thêm sản phẩm mới</label>
+            <input type="text" id="pName" placeholder="Tên vật phẩm..." style="margin-bottom: 8px;">
+            <input type="number" id="pPrice" placeholder="Giá tiền (VNĐ)..." style="margin-bottom: 8px;">
+            <button class="btn-success" onclick="addProduct()">Thêm Sản Phẩm</button>
+        </div>
+
+        <h4 style="color: #94a3b8; font-size: 14px; margin: 15px 0 8px 0;">Quản lý sản phẩm hiện có:</h4>
+        <div id="admin-product-list" style="margin-bottom: 20px;"></div>
+
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+
+        <div class="form-group">
+            <label style="color: #38bdf8;">Tạo mã giảm giá mới</label>
+            <input type="text" id="couponCode" placeholder="Mã (VD: SALE50)..." style="margin-bottom: 8px; text-transform: uppercase;">
+            <input type="number" id="couponDisc" placeholder="Giảm giá %..." style="margin-bottom: 8px;">
+            <button class="btn-success" onclick="addCoupon()">Tạo Mã Giảm Giá</button>
+        </div>
+
+        <h4 style="color: #94a3b8; font-size: 14px; margin: 15px 0 8px 0;">Danh sách mã giảm giá:</h4>
+        <div id="admin-coupon-list"></div>
     </div>
 </div>
 
@@ -161,12 +196,40 @@
         } else if (tabName === 'admin') {
             document.getElementById('tab-admin').classList.remove('hidden');
             document.querySelectorAll('.tab-btn')[3].classList.add('active');
+            loadAdminData();
         }
     }
 
     async function init() {
         await checkAuth();
-        await loadProducts();
+        await loadStoreData();
+    }
+
+    async function loadStoreData() {
+        const res = await fetch('/api/store-info');
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('main-banner').innerText = data.banner;
+            document.getElementById('bannerInput').value = data.banner;
+
+            const list = document.getElementById('product-list');
+            if (data.prods.length > 0) {
+                list.innerHTML = '';
+                data.prods.forEach(p => {
+                    list.innerHTML += `
+                        <div class="item-box">
+                            <div>
+                                <div style="font-weight: 600; color: #f1f5f9; font-size: 15px; margin-bottom: 4px;">${p.name}</div>
+                                <div style="color: #4ade80; font-weight: bold; font-size: 14px;">${p.price.toLocaleString()} VNĐ</div>
+                            </div>
+                            <button class="btn-success" onclick="buyProduct('${p.id}')">Mua Ngay</button>
+                        </div>
+                    `;
+                });
+            } else {
+                list.innerHTML = '<p style="color: #94a3b8;">Chưa có sản phẩm nào.</p>';
+            }
+        }
     }
 
     async function checkAuth() {
@@ -177,10 +240,17 @@
             document.getElementById('logout-btn').classList.remove('hidden');
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('user-info-section').classList.remove('hidden');
+            document.getElementById('vip-notice').classList.remove('hidden');
 
             document.getElementById('disp-username').innerText = '@' + currentUser.username;
             document.getElementById('disp-role').innerText = currentUser.role === 'admin' ? 'Quản trị viên' : 'Thành viên';
             document.getElementById('disp-balance').innerText = currentUser.balance.toLocaleString();
+            document.getElementById('disp-rank').innerText = currentUser.rank.name;
+            document.getElementById('disp-rank').style.color = currentUser.rank.color;
+
+            document.getElementById('shop-vip-name').innerText = currentUser.rank.name;
+            document.getElementById('shop-vip-name').style.color = currentUser.rank.color;
+            document.getElementById('shop-vip-discount').innerText = currentUser.rank.discount;
 
             if (currentUser.is2FAEnabled) {
                 document.getElementById('fa-status').innerText = 'Đang bật';
@@ -192,15 +262,14 @@
                 document.getElementById('tab-admin-btn').classList.remove('hidden');
             }
 
-            // Hiển thị lịch sử mua hàng
             const histList = document.getElementById('history-list');
             if (currentUser.history && currentUser.history.length > 0) {
                 histList.innerHTML = '';
                 currentUser.history.forEach(h => {
                     histList.innerHTML += `
-                        <div class="history-item">
+                        <div class="item-box">
                             <div>
-                                <div style="font-weight: 600; color: #f1f5f9; font-size: 14px;">${h.productName}</div>
+                                <div style="font-weight: 600; color: #f1f5f9; font-size: 14px;">${h.productName} (VIP: ${h.vipRankApplied})</div>
                                 <div style="font-size: 12px; color: #94a3b8;">Thời gian: ${h.time}</div>
                             </div>
                             <div style="color: #4ade80; font-weight: bold;">-${h.price.toLocaleString()}đ</div>
@@ -213,26 +282,15 @@
         }
     }
 
-    async function loadProducts() {
-        const res = await fetch('/api/products');
+    async function requestDeposit() {
+        const amount = document.getElementById('selectAmount').value;
+        const res = await fetch('/api/deposit-request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount })
+        });
         const data = await res.json();
-        const list = document.getElementById('product-list');
-        if (data.success && data.prods.length > 0) {
-            list.innerHTML = '';
-            data.prods.forEach(p => {
-                list.innerHTML += `
-                    <div class="product-item">
-                        <div>
-                            <div style="font-weight: 600; color: #f1f5f9; font-size: 15px; margin-bottom: 4px;">${p.name}</div>
-                            <div style="color: #4ade80; font-weight: bold; font-size: 14px;">${p.price.toLocaleString()} VNĐ</div>
-                        </div>
-                        <button class="btn-success" onclick="buyProduct('${p.id}')">Mua Ngay</button>
-                    </div>
-                `;
-            });
-        } else {
-            list.innerHTML = '<p style="color: #94a3b8;">Chưa có sản phẩm nào.</p>';
-        }
+        alert(data.message);
     }
 
     async function login() {
@@ -302,11 +360,136 @@
             switchTab('profile');
             return;
         }
+        const couponCode = document.getElementById('inputCoupon').value;
         if (!confirm('Xác nhận mua sản phẩm này?')) return;
+
         const res = await fetch('/api/buy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId: id })
+            body: JSON.stringify({ productId: id, couponCode })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) location.reload();
+    }
+
+    async function loadAdminData() {
+        const res = await fetch('/api/admin/data');
+        const data = await res.json();
+        if (data.success) {
+            const dList = document.getElementById('admin-deposit-list');
+            const pendingDeposits = data.deposits.filter(d => d.status === 'Chờ duyệt');
+            if (pendingDeposits.length > 0) {
+                dList.innerHTML = '';
+                pendingDeposits.forEach(d => {
+                    dList.innerHTML += `
+                        <div class="item-box" style="border-color: #38bdf8;">
+                            <div>
+                                <b>@${d.username}</b> muốn nạp <span style="color:#4ade80">${d.amount.toLocaleString()}đ</span>
+                                <div style="font-size: 11px; color: #94a3b8;">Thời gian: ${d.time}</div>
+                            </div>
+                            <div>
+                                <button class="btn-success" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;" onclick="approveDeposit('${d.id}')">Duyệt</button>
+                                <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="rejectDeposit('${d.id}')">Hủy</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                dList.innerHTML = '<p style="color: #94a3b8; font-size: 13px;">Không có yêu cầu nạp tiền nào đang chờ.</p>';
+            }
+
+            const uList = document.getElementById('admin-user-list');
+            uList.innerHTML = '';
+            data.users.forEach(u => {
+                uList.innerHTML += `
+                    <div class="item-box">
+                        <div><b>@${u.username}</b> - Số dư: <span style="color:#4ade80">${u.balance.toLocaleString()}đ</span> (Nạp: ${u.totalDeposited.toLocaleString()}đ)</div>
+                        ${u.username !== 'admin' ? `<button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="banUser('${u.username}')">Ban Nick</button>` : ''}
+                    </div>
+                `;
+            });
+
+            const pList = document.getElementById('admin-product-list');
+            pList.innerHTML = '';
+            data.prods.forEach(p => {
+                pList.innerHTML += `
+                    <div class="item-box">
+                        <div><b>${p.name}</b> - <span style="color:#4ade80">${p.price.toLocaleString()}đ</span></div>
+                        <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteProduct('${p.id}')">Xóa</button>
+                    </div>
+                `;
+            });
+
+            const cList = document.getElementById('admin-coupon-list');
+            cList.innerHTML = '';
+            data.coupons.forEach(c => {
+                cList.innerHTML += `
+                    <div class="item-box">
+                        <div>Mã: <b style="color: #38bdf8">${c.code}</b> (Giảm ${c.discountPercent}%)</div>
+                        <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteCoupon('${c.code}')">Xóa</button>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    async function approveDeposit(depositId) {
+        const res = await fetch('/api/admin/approve-deposit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ depositId })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) loadAdminData();
+    }
+
+    async function rejectDeposit(depositId) {
+        if (!confirm('Từ chối và hủy yêu cầu nạp này?')) return;
+        const res = await fetch('/api/admin/reject-deposit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ depositId })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) loadAdminData();
+    }
+
+    async function updateBanner() {
+        const bannerText = document.getElementById('bannerInput').value;
+        const res = await fetch('/api/admin/update-banner', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bannerText })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) loadStoreData();
+    }
+
+    async function createUser() {
+        const username = document.getElementById('newAccUser').value;
+        const password = document.getElementById('newAccPass').value;
+        const initialBalance = document.getElementById('newAccBal').value;
+
+        const res = await fetch('/api/admin/create-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, initialBalance })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) location.reload();
+    }
+
+    async function banUser(username) {
+        if (!confirm(`BAN và xóa vĩnh viễn @${username}?`)) return;
+        const res = await fetch('/api/admin/ban-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username })
         });
         const data = await res.json();
         alert(data.message);
@@ -323,11 +506,44 @@
         });
         const data = await res.json();
         alert(data.message);
-        if (data.success) {
-            document.getElementById('pName').value = '';
-            document.getElementById('pPrice').value = '';
-            loadProducts();
-        }
+        if (data.success) location.reload();
+    }
+
+    async function deleteProduct(id) {
+        if (!confirm('Xóa sản phẩm này?')) return;
+        const res = await fetch('/api/admin/delete-product', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) location.reload();
+    }
+
+    async function addCoupon() {
+        const code = document.getElementById('couponCode').value;
+        const discountPercent = document.getElementById('couponDisc').value;
+        const res = await fetch('/api/admin/add-coupon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, discountPercent })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) location.reload();
+    }
+
+    async function deleteCoupon(code) {
+        if (!confirm(`Xóa mã ${code}?`)) return;
+        const res = await fetch('/api/admin/delete-coupon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) loadAdminData();
     }
 
     async function logout() {
