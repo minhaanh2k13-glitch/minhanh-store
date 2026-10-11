@@ -26,12 +26,16 @@ function readDB() {
         const hashedPassword = bcrypt.hashSync('admin123', 10);
         const initialData = { 
             accs: [
-                { username: 'admin', password: hashedPassword, role: 'admin', balance: 1000000000, is2FAEnabled: false, secret2fa: null }
+                { username: 'admin', password: hashedPassword, role: 'admin', balance: 1000000000, totalDeposited: 1000000, is2FAEnabled: false, secret2fa: null }
             ], 
             prods: [
                 { id: '1', name: 'Tài khoản Netflix Premium 1 Tháng', price: 69000, stock: 'Có sẵn' },
                 { id: '2', name: 'Key Windows 11 Pro Bản Quyền Vĩnh Viễn', price: 150000, stock: 'Có sẵn' }
             ], 
+            coupons: [
+                { code: 'MINHANH2K', discountPercent: 10 }
+            ],
+            banner: 'Mã giảm giá "MINHANH2K" giảm ngay 10% tổng đơn hàng! 🔒',
             history: [], 
             blacklist: [], 
             logs: [] 
@@ -42,7 +46,16 @@ function readDB() {
     if (!data.blacklist) data.blacklist = [];
     if (!data.logs) data.logs = [];
     if (!data.prods) data.prods = [];
+    if (!data.accs) data.accs = [];
+    if (!data.coupons) data.coupons = [];
+    if (!data.banner) data.banner = 'Chào mừng đến với MinhAnh Store!';
     if (!data.history) data.history = [];
+    
+    // Đảm bảo mọi user đều có trường totalDeposited
+    data.accs.forEach(u => {
+        if (u.totalDeposited === undefined) u.totalDeposited = u.balance || 0;
+    });
+
     return data;
 }
 
@@ -51,6 +64,17 @@ function writeDB(data) {
         fs.mkdirSync(DB_DIR, { recursive: true });
     }
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
+
+// Hàm tính cấp độ hội viên dựa trên tổng số tiền đã nạp
+function getMembershipRank(totalDeposited) {
+    if (totalDeposited >= 100000) {
+        return { name: 'Vàng 🥇', discount: 20, color: '#f59e0b' };
+    } else if (totalDeposited >= 25000) {
+        return { name: 'Bạc 🥈', discount: 5, color: '#38bdf8' };
+    } else {
+        return { name: 'Đồng (Free) 🥉', discount: 0, color: '#94a3b8' };
+    }
 }
 
 function getClientIP(req) {
@@ -66,7 +90,7 @@ function securityShield(req, res, next) {
     }
     const db = readDB();
     if (db.blacklist && db.blacklist.includes(clientIP)) {
-        return res.status(403).json({ success: false, message: 'Truy cập bị từ chối vĩnh viễn do hành vi xâm nhập!' });
+        return res.status(403).json({ success: false, message: 'Truy cập bị từ chối vĩnh viễn!' });
     }
     next();
 }
@@ -103,19 +127,16 @@ function verifyAdmin(req, res, next) {
     });
 }
 
-// ==================== TRANG BẪY HONEYPOT (DỤ KẺ GIAN) ====================
+// Bẫy Honeypot
 app.all('/api/secret-admin-trap', (req, res) => {
-    banAttacker(req, 'Phát hiện truy cập vào điểm bẫy Honeypot mật khẩu gốc!');
-    res.status(403).json({
-        success: false,
-        message: 'CẢNH BÁO: IP và dấu vết thiết bị của bạn đã bị ghi nhận và đưa vào danh sách đen vĩnh viễn vì hành vi quét hệ thống!'
-    });
+    banAttacker(req, 'Truy cập bẫy Honeypot hệ thống!');
+    res.status(403).json({ success: false, message: 'CẢNH BÁO: IP của bạn đã bị đưa vào danh sách đen vĩnh viễn!' });
 });
 
-// ==================== API CHÍNH ====================
-app.get('/api/products', (req, res) => {
+// API Công khai
+app.get('/api/store-info', (req, res) => {
     const db = readDB();
-    res.json({ success: true, prods: db.prods });
+    res.json({ success: true, prods: db.prods, banner: db.banner, coupons: db.coupons });
 });
 
 app.post('/api/login', async (req, res) => {
@@ -144,8 +165,8 @@ app.get('/api/me', verifyToken, (req, res) => {
     const user = db.accs.find(x => x.username === req.user.username);
     if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy' });
     
-    // Lọc lịch sử mua hàng riêng của user này
     const userHistory = db.history.filter(h => h.username === user.username);
+    const rank = getMembershipRank(user.totalDeposited || 0);
 
     res.json({ 
         success: true, 
@@ -153,6 +174,8 @@ app.get('/api/me', verifyToken, (req, res) => {
             username: user.username, 
             role: user.role, 
             balance: user.balance, 
+            totalDeposited: user.totalDeposited || 0,
+            rank: rank,
             is2FAEnabled: user.is2FAEnabled,
             history: userHistory
         } 
@@ -164,13 +187,81 @@ app.post('/api/logout', (req, res) => {
     res.json({ success: true, message: 'Đăng xuất thành công' });
 });
 
+// Nạp tiền (Mô phỏng nạp tiền tự động ngay tại trang chủ)
+app.post('/api/deposit', verifyToken, (req, res) => {
+    const { amount } = req.body;
+    const depositAmount = Number(amount);
+    if (!depositAmount || depositAmount <= 0) {
+        return res.json({ success: false, message: 'Số tiền nạp không hợp lệ!' });
+    }
+
+    const db = readDB();
+    const user = db.accs.find(x => x.username === req.user.username);
+    if (!user) return res.json({ success: false, message: 'Không tìm thấy tài khoản!' });
+
+    user.balance += depositAmount;
+    user.totalDeposited = (user.totalDeposited || 0) + depositAmount;
+
+    writeDB(db);
+    const newRank = getMembershipRank(user.totalDeposited);
+    res.json({ 
+        success: true, 
+        message: `Nạp thành công ${depositAmount.toLocaleString()}đ! Cấp bậc hội viên hiện tại: ${newRank.name}`, 
+        newBalance: user.balance,
+        rank: newRank
+    });
+});
+
+// Mua hàng (Tự động áp dụng giảm giá theo cấp bậc hội viên + mã coupon nếu có)
+app.post('/api/buy', verifyToken, (req, res) => {
+    const { productId, couponCode } = req.body;
+    const db = readDB();
+    const user = db.accs.find(x => x.username === req.user.username);
+    const product = db.prods.find(p => p.id === productId);
+
+    if (!product) return res.json({ success: false, message: 'Sản phẩm không tồn tại!' });
+
+    // 1. Giảm giá theo cấp bậc hội viên
+    const rank = getMembershipRank(user.totalDeposited || 0);
+    let finalPrice = product.price * (1 - rank.discount / 100);
+
+    // 2. Giảm giá thêm theo mã Coupon (nếu có)
+    if (couponCode) {
+        const coupon = db.coupons.find(c => c.code.toUpperCase() === couponCode.toUpperCase());
+        if (coupon) {
+            finalPrice = finalPrice * (1 - coupon.discountPercent / 100);
+        } else {
+            return res.json({ success: false, message: 'Mã giảm giá không hợp lệ!' });
+        }
+    }
+
+    // Làm tròn tiền
+    finalPrice = Math.round(finalPrice);
+
+    if (user.balance < finalPrice) {
+        return res.json({ success: false, message: `Số dư không đủ! Cần ${finalPrice.toLocaleString()}đ (Đã áp dụng giảm giá VIP ${rank.name})` });
+    }
+
+    user.balance -= finalPrice;
+    db.history.push({ 
+        username: user.username, 
+        productName: product.name, 
+        price: finalPrice, 
+        vipRankApplied: rank.name,
+        time: new Date().toLocaleString() 
+    });
+    writeDB(db);
+
+    res.json({ success: true, message: `Mua thành công ${product.name} với ưu đãi ${rank.name}! Đã trừ ${finalPrice.toLocaleString()}đ`, newBalance: user.balance });
+});
+
+// Các API quản trị khác giữ nguyên...
 app.post('/api/2fa/setup', verifyToken, async (req, res) => {
     const db = readDB();
     const user = db.accs.find(x => x.username === req.user.username);
     const secret = speakeasy.generateSecret({ name: `MinhAnhStore (${user.username})` });
     user.tempSecret = secret.base32;
     writeDB(db);
-
     QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
         if (err) return res.status(500).json({ success: false, message: 'Lỗi tạo QR' });
         res.json({ success: true, qrCodeUrl: data_url });
@@ -207,19 +298,39 @@ app.post('/api/change-password', verifyToken, (req, res) => {
     res.json({ success: true, message: 'Đổi mật khẩu thành công!' });
 });
 
-app.post('/api/buy', verifyToken, (req, res) => {
-    const { productId } = req.body;
+app.get('/api/admin/data', verifyAdmin, (req, res) => {
     const db = readDB();
-    const user = db.accs.find(x => x.username === req.user.username);
-    const product = db.prods.find(p => p.id === productId);
+    const safeUsers = db.accs.map(u => ({ username: u.username, role: u.role, balance: u.balance, totalDeposited: u.totalDeposited || 0, is2FAEnabled: u.is2FAEnabled }));
+    res.json({ success: true, users: safeUsers, prods: db.prods, coupons: db.coupons, banner: db.banner });
+});
 
-    if (!product) return res.json({ success: false, message: 'Sản phẩm không tồn tại!' });
-    if (user.balance < product.price) return res.json({ success: false, message: 'Số dư không đủ!' });
+app.post('/api/admin/create-user', verifyAdmin, (req, res) => {
+    const { username, password, initialBalance } = req.body;
+    if (!username || !password) return res.json({ success: false, message: 'Thiếu thông tin!' });
+    const db = readDB();
+    if (db.accs.find(u => u.username === username)) return res.json({ success: false, message: 'Tài khoản đã tồn tại!' });
 
-    user.balance -= product.price;
-    db.history.push({ username: user.username, productName: product.name, price: product.price, time: new Date().toLocaleString() });
+    const initBal = Number(initialBalance) || 0;
+    db.accs.push({
+        username,
+        password: bcrypt.hashSync(password, 10),
+        role: 'user',
+        balance: initBal,
+        totalDeposited: initBal,
+        is2FAEnabled: false,
+        secret2fa: null
+    });
     writeDB(db);
-    res.json({ success: true, message: `Mua thành công ${product.name}`, newBalance: user.balance });
+    res.json({ success: true, message: `Đã tạo tài khoản @${username} thành công!` });
+});
+
+app.post('/api/admin/ban-user', verifyAdmin, (req, res) => {
+    const { username } = req.body;
+    if (username === 'admin') return res.json({ success: false, message: 'Không thể xóa Root Admin!' });
+    const db = readDB();
+    db.accs = db.accs.filter(u => u.username !== username);
+    writeDB(db);
+    res.json({ success: true, message: `Đã BAN tài khoản @${username}!` });
 });
 
 app.post('/api/admin/add-product', verifyAdmin, (req, res) => {
@@ -229,6 +340,39 @@ app.post('/api/admin/add-product', verifyAdmin, (req, res) => {
     db.prods.push({ id: Date.now().toString(), name, price: Number(price), stock: stock || 'Có sẵn' });
     writeDB(db);
     res.json({ success: true, message: 'Thêm sản phẩm thành công!' });
+});
+
+app.post('/api/admin/delete-product', verifyAdmin, (req, res) => {
+    const { id } = req.body;
+    const db = readDB();
+    db.prods = db.prods.filter(p => p.id !== id);
+    writeDB(db);
+    res.json({ success: true, message: 'Đã xóa sản phẩm!' });
+});
+
+app.post('/api/admin/add-coupon', verifyAdmin, (req, res) => {
+    const { code, discountPercent } = req.body;
+    if (!code || !discountPercent) return res.json({ success: false, message: 'Thiếu thông tin!' });
+    const db = readDB();
+    db.coupons.push({ code: code.toUpperCase(), discountPercent: Number(discountPercent) });
+    writeDB(db);
+    res.json({ success: true, message: `Tạo mã ${code.toUpperCase()} thành công!` });
+});
+
+app.post('/api/admin/delete-coupon', verifyAdmin, (req, res) => {
+    const { code } = req.body;
+    const db = readDB();
+    db.coupons = db.coupons.filter(c => c.code !== code);
+    writeDB(db);
+    res.json({ success: true, message: `Đã xóa mã ${code}!` });
+});
+
+app.post('/api/admin/update-banner', verifyAdmin, (req, res) => {
+    const { bannerText } = req.body;
+    const db = readDB();
+    db.banner = bannerText || '';
+    writeDB(db);
+    res.json({ success: true, message: 'Cập nhật Banner thành công!' });
 });
 
 app.listen(PORT, () => {
