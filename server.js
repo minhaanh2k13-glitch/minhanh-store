@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const DB_DIR = path.join(__dirname, 'data');
 const DB_FILE = path.join(DB_DIR, 'database.json');
 
-// Đọc database an toàn (Không làm mất 2FA khi sửa code)
+// Đọc database an toàn (Không làm mất 2FA hay dữ liệu khi sửa code)
 function readDB() {
     if (!fs.existsSync(DB_DIR)) {
         fs.mkdirSync(DB_DIR, { recursive: true });
@@ -123,7 +123,8 @@ function verifyToken(req, res, next) {
 
 function verifyAdmin(req, res, next) {
     verifyToken(req, res, () => {
-        if (req.user.role !== 'admin') {
+        // Khóa cứng kiểm tra chuẩn xác tài khoản admin
+        if (req.user.username !== 'admin' || req.user.role !== 'admin') {
             banAttacker(req, 'Cố tình gọi API Admin trái phép');
             return res.status(403).json({ success: false, message: 'Từ chối quyền truy cập!' });
         }
@@ -150,6 +151,13 @@ app.post('/api/login', async (req, res) => {
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
         return res.json({ success: false, message: 'Sai tên đăng nhập hoặc mật khẩu!' });
+    }
+
+    // Kiểm tra bảo mật định danh thiết bị/IP đối với tài khoản admin
+    if (username === 'admin') {
+        const clientIP = getClientIP(req);
+        const userAgent = req.headers['user-agent'] || 'Unknown';
+        // Bạn có thể mở rộng kiểm tra IP hoặc User-Agent ở đây nếu muốn siết chặt tuyệt đối
     }
 
     if (user.is2FAEnabled) {
@@ -409,4 +417,4 @@ app.post('/api/admin/update-banner', verifyAdmin, (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server chạy an toàn tại cổng ${PORT}`);
-});s
+});
