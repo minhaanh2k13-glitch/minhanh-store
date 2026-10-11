@@ -4,279 +4,815 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anh Store - Halloween Edition</title>
-    <!-- Import Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Import font chữ ma mị Creepster và Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-orange: #ff7518;
-            --deep-purple: #29153f;
-            --neon-purple: #b537f2;
-            --dark-bg: #07040d;
-            --card-bg: rgba(20, 10, 35, 0.75);
-            --text-color: #f3f0ff;
+            --bg-color: #0b0716;
+            --card-bg: #150b24;
+            --text-color: #f0f0f0;
+            --text-sub: #b3a4c4;
+            --accent-color: #ff7518; /* Cam bí ngô */
+            --border-color: #3b1d59;
+            --danger-color: #ff3333;
+            --success-color: #00ffcc;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .light-mode {
+            --bg-color: #f3eef9;
+            --card-bg: #ffffff;
+            --text-color: #1a0c2e;
+            --text-sub: #6b5882;
+            --accent-color: #d14900;
+            --border-color: #d8c4e9;
         }
-
         body {
-            background-color: var(--dark-bg);
+            background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Montserrat', sans-serif;
+            margin: 0; padding: 0 0 90px 0;
+            transition: background 0.3s, color 0.3s;
+            background-image: radial-gradient(circle at 50% 10%, #29153f 0%, #0b0716 70%);
             min-height: 100vh;
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at 50% 10%, #3d1b5c 0%, var(--dark-bg) 80%);
-            position: relative;
         }
-
-        /* --- THANH ĐẦU TRANG: TÊN Ở GÓC TRÁI --- */
-        header {
-            position: fixed;
-            top: 20px;
-            left: 30px;
-            z-index: 100;
-        }
-
-        .logo {
-            font-family: 'Creepster', cursive;
-            font-size: 2.8rem;
-            color: var(--primary-orange);
-            text-shadow: 0 0 10px rgba(255, 117, 24, 0.8),
-                         0 0 20px rgba(181, 55, 242, 0.5);
-            letter-spacing: 2px;
-            animation: pulseLogo 3s ease-in-out infinite alternate;
-        }
-
-        @keyframes pulseLogo {
-            0% { transform: scale(1); text-shadow: 0 0 10px rgba(255, 117, 24, 0.8); }
-            100% { transform: scale(1.05); text-shadow: 0 0 20px rgba(255, 117, 24, 1), 0 0 30px var(--neon-purple); }
-        }
-
-        /* Hiệu ứng trạng thái bảo vệ/mã hóa giả lập góc phải */
-        .system-status {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(10, 5, 20, 0.8);
-            border: 1px dashed var(--neon-purple);
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            color: #b537f2;
-            z-index: 100;
+        .container { max-width: 650px; margin: 0 auto; padding: 15px; }
+        
+        /* Đưa tiêu đề Anh Store lên góc trái phía trên */
+        .store-header-bar {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 0 10px rgba(181, 55, 242, 0.2);
+            margin-bottom: 20px;
+            padding-top: 10px;
         }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #00ff66;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #00ff66;
-            animation: blink 1.5s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* --- KHU VỰC TRUNG TÂM RỘNG RÃI --- */
-        main {
-            padding: 120px 40px 140px 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-
-        .hero-banner {
-            text-align: center;
-            background: var(--card-bg);
-            border: 2px solid rgba(255, 117, 24, 0.4);
-            border-radius: 20px;
-            padding: 50px 20px;
-            box-shadow: 0 0 30px rgba(255, 117, 24, 0.15);
-            backdrop-filter: blur(10px);
-        }
-
-        .hero-banner h1 {
+        .store-logo {
             font-family: 'Creepster', cursive;
-            font-size: 4rem;
-            color: var(--neon-purple);
-            text-shadow: 0 0 15px rgba(181, 55, 242, 0.7);
-            margin-bottom: 15px;
-        }
-
-        .hero-banner p {
-            font-size: 1.15rem;
-            color: #b8b2cb;
-            max-width: 700px;
-            margin: 0 auto 25px auto;
-        }
-
-        .cta-btn {
-            background: linear-gradient(135deg, var(--primary-orange), #d45b05);
-            color: #fff;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1rem;
-            font-weight: 700;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(255, 117, 24, 0.5);
-            transition: all 0.3s ease;
-        }
-
-        .cta-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 0 25px rgba(255, 117, 24, 0.8);
-        }
-
-        /* Khu vực lưới tính năng / sản phẩm giả lập */
-        .grid-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(255, 117, 24, 0.7), 0 0 20px rgba(255, 0, 0, 0.4);
+            letter-spacing: 2px;
         }
 
         .card {
             background: var(--card-bg);
-            border: 1px solid rgba(181, 55, 242, 0.3);
-            border-radius: 15px;
-            padding: 25px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px; margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 0 15px rgba(181, 55, 242, 0.05);
         }
-
-        .card:hover {
-            border-color: var(--primary-orange);
-            transform: translateY(-5px);
-            box-shadow: 0 0 20px rgba(255, 117, 24, 0.3);
+        .btn-action {
+            background: var(--accent-color);
+            color: #fff; border: none;
+            padding: 8px 14px; border-radius: 8px;
+            font-weight: 700; cursor: pointer; font-size: 12px;
+            box-shadow: 0 0 10px rgba(255, 117, 24, 0.4);
+            transition: all 0.2s;
         }
-
-        .card h3 {
-            color: var(--primary-orange);
-            margin-bottom: 12px;
-            font-size: 1.3rem;
+        .btn-action:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px var(--accent-color);
         }
-
-        .card p {
-            color: #a8a0c2;
-            font-size: 0.95rem;
-            line-height: 1.5;
+        .modal-input {
+            width: 100%; padding: 10px; margin: 6px 0;
+            background: rgba(10, 5, 20, 0.8); border: 1px solid var(--border-color);
+            color: var(--text-color); border-radius: 8px; box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
         }
-
-        /* --- MENU ĐIỀU HƯỚNG DỜI XUỐNG DƯỚI --- */
-        nav.bottom-nav {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(15, 7, 28, 0.9);
-            border: 2px solid var(--primary-orange);
-            border-radius: 50px;
-            padding: 12px 40px;
-            box-shadow: 0 0 25px rgba(255, 117, 24, 0.4);
+        
+        /* Menu điều hướng đưa xuống dưới cùng */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(15, 8, 25, 0.95); border-top: 2px solid var(--accent-color);
+            display: flex; justify-content: space-around; padding: 12px 0; z-index: 100;
             backdrop-filter: blur(10px);
-            z-index: 100;
+            box-shadow: 0 -5px 20px rgba(255, 117, 24, 0.2);
         }
-
-        nav.bottom-nav ul {
-            list-style: none;
-            display: flex;
-            gap: 35px;
+        .nav-item {
+            background: none; border: none; color: var(--text-sub);
+            font-size: 12px; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px;
+            transition: color 0.3s;
         }
-
-        nav.bottom-nav ul li a {
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 700;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-            position: relative;
+        .nav-item.active { color: var(--accent-color); text-shadow: 0 0 8px var(--accent-color); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(5, 2, 10, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(5px);
         }
-
-        nav.bottom-nav ul li a:hover {
-            color: var(--primary-orange);
-            text-shadow: 0 0 10px var(--primary-orange);
+        .modal-content { 
+            background: var(--card-bg); padding: 24px; border-radius: 16px; width: 90%; max-width: 400px; 
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 30px rgba(255, 117, 24, 0.3);
         }
-
-        /* Hiệu ứng trang trí ma quái phụ */
-        .ghost-decor {
-            position: fixed;
-            bottom: 30px;
-            right: 40px;
-            font-size: 2.5rem;
-            animation: floatGhost 4s ease-in-out infinite alternate;
-            z-index: 50;
-            pointer-events: none;
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #1e0d30; border: 1px solid var(--accent-color); color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px;
+            z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            box-shadow: 0 0 15px rgba(255, 117, 24, 0.5);
         }
-
-        @keyframes floatGhost {
-            0% { transform: translateY(0); opacity: 0.7; }
-            100% { transform: translateY(-25px); opacity: 1; }
+        #toast.show { opacity: 1; }
+        .product-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px dashed var(--border-color);
         }
+        .float-tg {
+            position: fixed; right: 20px; bottom: 85px; background: #9b30ff; color: #fff;
+            width: 48px; height: 48px; border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; text-decoration: none; font-size: 22px; box-shadow: 0 0 15px rgba(155, 48, 255, 0.7); z-index: 99;
+            border: 2px solid #ff7518;
+        }
+        .badge-admin { background: var(--danger-color); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .marquee-banner { background: rgba(255, 117, 24, 0.1); border: 1px dashed var(--accent-color); padding: 8px; border-radius: 8px; margin-bottom: 15px; overflow: hidden; white-space: nowrap; }
+        .marquee-text { display: inline-block; animation: marquee 18s linear infinite; font-size: 12px; color: var(--accent-color); font-weight: bold; font-family: 'Creepster', cursive; letter-spacing: 1px; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
     </style>
 </head>
-<body>
+<body id="main-body">
 
-    <!-- Tên cửa hàng ở góc trái phía trên -->
-    <header>
-        <div class="logo">Anh Store</div>
-    </header>
+<div id="toast">Thông báo ma quái!</div>
+<a href="https://t.me/minhanh2k" target="_blank" class="float-tg" title="Liên hệ Telegram">🦇</a>
 
-    <!-- Trạng thái hệ thống giả lập bảo mật/mã hóa nâng cao -->
-    <div class="system-status">
-        <div class="status-dot"></div>
-        <span>Halloween Core Guard Active</span>
+<!-- MÀN HÌNH ĐĂNG NHẬP -->
+<div id="auth-screen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-color); z-index:9999; display:flex; justify-content:center; align-items:center; padding:15px; background-image: radial-gradient(circle at 50% 50%, #2e1147 0%, #0b0716 80%);">
+    <div class="card" style="width:100%; max-width:340px; text-align:center;">
+        <h2 style="font-family:'Creepster', cursive; font-size: 2.8rem; margin-top:0; color:var(--accent-color); text-shadow: 0 0 10px rgba(255,117,24,0.7);">Anh Store</h2>
+        <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 15px;">🎃 Cổng đăng nhập hệ thống ma quái 🎃</p>
+        <input type="text" id="auth-u" class="modal-input" placeholder="Tên đăng nhập">
+        <input type="password" id="auth-p" class="modal-input" placeholder="Mật khẩu">
+        <div id="otp-group" style="display:none; margin-top:8px;">
+            <input type="text" id="auth-otp" class="modal-input" placeholder="Mã Google Authenticator (6 số)" maxlength="6">
+        </div>
+        <button class="btn-action" style="width:100%; margin-top:12px; padding:12px; font-size: 14px;" onclick="handleLogin()">Gia Nhập Đêm Hội</button>
+        <p style="font-size: 10px; color: var(--danger-color); margin-top: 12px; margin-bottom:0;">* Khu vực hạn chế, yêu cầu quyền truy cập hợp lệ.</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- TIÊU ĐỀ GÓC TRÁI VÀ NÚT TIỆN ÍCH -->
+    <div class="store-header-bar">
+        <div class="store-logo">Anh Store</div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-action" style="padding: 6px 10px; font-size: 11px; background: #2a1545;" onclick="toggleTheme()">✨ Sáng/Tối</button>
+            <button class="btn-action" style="padding: 6px 10px; font-size: 11px; background: var(--danger-color);" onclick="logout()">Thoát</button>
+        </div>
     </div>
 
-    <!-- Khu vực nội dung chính siêu rộng rãi và thoáng đãng -->
-    <main>
-        <div class="hero-banner">
-            <h1>Đêm Hội Ma Quái Halloween</h1>
-            <p>Kho lưu trữ tính năng đầy đủ, hệ thống tối ưu hóa rộng rãi, tốc độ cao và bảo mật tuyệt đối dành riêng cho Anh Store.</p>
-            <button class="cta-btn" onclick="alert('Chào mừng bạn đến với sự kiện Halloween của Anh Store!')">Khám Phá Ngay</button>
+    <div class="marquee-banner">
+        <span class="marquee-text">👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng hóa đơn ma quái! 🦇</span>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div style="font-weight: 800; font-size: 14px; color: #b537f2;">
+            Trạng thái: <span id="admin-badge-span" class="badge-admin" style="display:none;">ADMIN</span> Hoạt động an toàn
+        </div>
+    </div>
+
+    <!-- TAB TRANG CHỦ -->
+    <div id="tab-home" class="tab-content active">
+        <div class="card">
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Hồ Sơ Linh Hồn</h3>
+            <p id="acc-username-display" style="font-size:12px; margin:6px 0;">Tài khoản: --</p>
+            <p id="acc-role-display" style="font-size:12px; margin:6px 0;">Quyền hạn: --</p>
+            <p style="font-size:12px; margin:6px 0;">Linh khí (Số dư): <b id="user-balance" style="color:var(--success-color);">0đ</b></p>
+            <button class="btn-action" style="margin-top:10px;" onclick="openModal('deposit-modal')">Nạp Linh Khí (Nạp Tiền)</button>
         </div>
 
-        <div class="grid-section">
-            <div class="card">
-                <h3>Bảo Mật Tối Thượng</h3>
-                <p>Hệ thống chống giả mạo, mã hóa tầng sâu giúp bảo vệ toàn bộ mã nguồn và dữ liệu vận hành an toàn.</p>
+        <!-- PHẦN CÀI ĐẶT GOOGLE AUTHENTICATOR (2FA) -->
+        <div class="card" id="card-2fa-setting">
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Bảo Mật Google Authenticator (2FA)</h3>
+            <p id="status-2fa" style="font-size:11px; color:var(--text-sub);">Trạng thái: Đang tắt phong ấn</p>
+            <div id="2fa-setup-container" style="display:none; text-align:center; margin-top:10px;">
+                <p style="font-size:11px;">Quét mã phong ấn QR bằng ứng dụng Google Authenticator:</p>
+                <img id="qr-code-img" src="" alt="QR Code" style="width:140px; height:140px; background:#fff; padding:4px; border-radius:8px; margin:6px auto;">
+                <input type="text" id="verify-otp-input" class="modal-input" placeholder="Nhập mã 6 số từ app để xác thực" maxlength="6">
+                <button class="btn-action" style="background:var(--success-color); color:#000; width:100%; margin-top:6px;" onclick="verifyAndEnable2FA()">Kích Hoạt Phong Ấn 2FA</button>
             </div>
-            <div class="card">
-                <h3>Giao Diện Ma Mị</h3>
-                <p>Không gian tối ưu rộng rãi, bố cục tinh gọn với tông màu cam bí ngô và tím huyền bí đặc trưng.</p>
+            <button class="btn-action" id="btn-toggle-2fa" style="margin-top:10px;" onclick="setup2FA()">Bật Google Authenticator</button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Đổi Mật Khẩu Phong Ấn</h3>
+            <input type="password" id="old-pass" class="modal-input" placeholder="Mật khẩu cũ">
+            <input type="password" id="new-pass" class="modal-input" placeholder="Mật khẩu mới">
+            <button class="btn-action" style="margin-top:8px;" onclick="handleChangePassword()">Lưu Mật Khẩu Mới</button>
+        </div>
+    </div>
+
+    <!-- TAB CỬA HÀNG -->
+    <div id="tab-shop" class="tab-content">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="margin:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Kho Vật Phẩm Ma Quái</h3>
+                <button class="btn-action" style="background:#2a1545; border: 1px solid var(--accent-color);" onclick="openModal('cart-modal')">🛒 Giỏ Hàng (<span id="cart-count">0</span>)</button>
             </div>
-            <div class="card">
-                <h3>Kho Công Cụ Đầy Đủ</h3>
-                <p>Tích hợp sẵn mọi thành phần chức năng mạnh mẽ giống như các phiên bản nâng cao đầy đủ mã nguồn.</p>
+            <div id="product-list"></div>
+        </div>
+    </div>
+
+    <!-- TAB LỊCH SỬ -->
+    <div id="tab-history" class="tab-content">
+        <div class="card">
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Lịch Sử Giao Dịch Vật Phẩm</h3>
+            <div id="my-history-list"></div>
+        </div>
+        <div class="card">
+            <h3 style="margin-top:0; font-size:15px; color:var(--accent-color); font-family:'Creepster', cursive; letter-spacing:1px;">Biến Động Linh Khí</h3>
+            <div id="my-tx-list"></div>
+        </div>
+    </div>
+
+    <!-- TAB ADMIN -->
+    <div id="tab-admin" class="tab-content">
+        <div class="card" id="admin-card-menu" style="display:none; border-color:var(--danger-color);">
+            <h3 style="margin-top:0; font-size:16px; color:var(--danger-color); font-family:'Creepster', cursive; letter-spacing:1px;">👑 Điện Tối Cao Của Quản Trị Viên</h3>
+            
+            <h4 style="font-size:12px; margin:10px 0 4px 0; color:var(--accent-color);">Duyệt Nạp Tiền Linh Khí</h4>
+            <div id="admin-pending-deposits"></div>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Triệu Hồi Vật Phẩm Mới</h4>
+            <input type="text" id="admin-prod-name" class="modal-input" placeholder="Tên sản phẩm">
+            <input type="number" id="admin-prod-price" class="modal-input" placeholder="Giá tiền">
+            <textarea id="admin-prod-stock" class="modal-input" placeholder="Danh sách tài khoản (mỗi dòng 1 acc)" style="height:60px;"></textarea>
+            <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:6px;" onclick="addNewProduct()">Đăng Bán Ngay</button>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Quản Lý Kho Hàng</h4>
+            <div id="admin-product-manage-list"></div>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Cấp Tài Khoản Mới</h4>
+            <input type="text" id="admin-new-u" class="modal-input" placeholder="Tên tài khoản">
+            <input type="text" id="admin-new-p" class="modal-input" placeholder="Mật khẩu">
+            <button class="btn-action" style="margin-top:6px;" onclick="adminCreateUser()">Khởi Tạo Tài Khoản</button>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Điều Chỉnh Linh Khí User</h4>
+            <input type="text" id="admin-edit-u" class="modal-input" placeholder="Tên tài khoản">
+            <input type="number" id="admin-edit-amt" class="modal-input" placeholder="Số tiền">
+            <div style="display:flex; gap:8px; margin-top:6px;">
+                <button class="btn-action" style="background:var(--success-color); color:#000; flex:1;" onclick="adminEditBalance('add')">Cộng Tiền</button>
+                <button class="btn-action" style="background:var(--danger-color); color:#fff; flex:1;" onclick="adminEditBalance('sub')">Trừ Tiền</button>
+            </div>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Tạo Mã Giảm Giá Ma Quái</h4>
+            <input type="text" id="admin-voucher-code" class="modal-input" placeholder="Mã code (VD: HALLOWEEN)">
+            <input type="number" id="admin-voucher-rate" class="modal-input" placeholder="% Giảm (VD: 10 = 10%)">
+            <button class="btn-action" style="background:var(--accent-color); margin-top:6px;" onclick="addVoucher()">Thêm Mã</button>
+            <div id="admin-voucher-list" style="margin-top:8px;"></div>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">Quản Lý Thành Viên</h4>
+            <div id="admin-user-manage-list"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NẠP TIỀN -->
+<div id="deposit-modal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Yêu Cầu Nạp Linh Khí</h3>
+        <p style="font-size:11px; color:var(--text-sub);">Nhập số tiền bạn muốn nạp vào hệ thống để Quản Trị Viên phê duyệt:</p>
+        <input type="number" id="dep-amount" class="modal-input" placeholder="Số tiền (VNĐ)">
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+            <button class="btn-action" style="background:#374151;" onclick="closeModal('deposit-modal')">Hủy</button>
+            <button class="btn-action" onclick="submitDeposit()">Gửi Yêu Cầu</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL GIỎ HÀNG -->
+<div id="cart-modal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Giỏ Hàng Ma Quái</h3>
+        <div id="cart-items-list" style="max-height:160px; overflow-y:auto; margin-bottom:10px;"></div>
+        <input type="text" id="voucher-input" class="modal-input" placeholder="Nhập mã giảm giá">
+        <button class="btn-action" style="width:100%; background:#2a1545; border:1px solid var(--accent-color); margin-bottom:10px;" onclick="applyVoucher()">Áp Dụng Mã</button>
+        <div style="font-size:13px; font-weight:bold; margin-bottom:12px;">Tổng thanh toán: <span id="cart-total-price" style="color:var(--success-color);">0đ</span></div>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn-action" style="background:#374151;" onclick="closeModal('cart-modal')">Đóng</button>
+            <button class="btn-action" onclick="checkoutCart()">Thanh Toán</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL XEM ACC -->
+<div id="bought-modal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Vật Phẩm Đã Sở Hữu</h3>
+        <textarea id="bought-text" class="modal-input" style="height:110px;" readonly></textarea>
+        <button class="btn-action" style="width:100%; margin-top:8px;" onclick="closeModal('bought-modal')">Đóng</button>
+    </div>
+</div>
+
+<!-- MODAL SỬA SẢN PHẨM -->
+<div id="edit-product-modal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Cập Nhật Vật Phẩm</h3>
+        <input type="hidden" id="edit-prod-id">
+        <input type="text" id="edit-prod-name" class="modal-input" placeholder="Tên sản phẩm">
+        <input type="number" id="edit-prod-price" class="modal-input" placeholder="Giá tiền">
+        <textarea id="edit-prod-stock" class="modal-input" placeholder="Thêm tài khoản mới (mỗi dòng 1 acc)" style="height:60px;"></textarea>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+            <button class="btn-action" style="background:#374151;" onclick="closeModal('edit-product-modal')">Hủy</button>
+            <button class="btn-action" onclick="saveEditedProduct()">Lưu Thay Đổi</button>
+        </div>
+    </div>
+</div>
+
+<!-- MENU ĐIỀU HƯỚNG DƯỚI CÙNG -->
+<div class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('tab-home')">Trang chủ</button>
+    <button class="nav-item" onclick="switchTab('tab-shop')">Cửa hàng</button>
+    <button class="nav-item" onclick="switchTab('tab-history')">Lịch sử</button>
+    <button class="nav-item" onclick="switchTab('tab-admin')" id="nav-admin-btn">Quản trị</button>
+</div>
+
+<!-- TOÀN BỘ LOGIC JAVASCRIPT GỐC ĐƯỢC GIỮ NGUYÊN HOÀN TOÀN -->
+<script>
+let current = JSON.parse(localStorage.getItem("pro_curr") || "null");
+let cart = JSON.parse(localStorage.getItem("pro_cart") || "[]");
+let discountRate = 0;
+
+if (current) initApp(current);
+
+function showToast(msg) {
+    let t = document.getElementById("toast");
+    t.innerText = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+function toggleTheme() {
+    document.body.classList.toggle("light-mode");
+}
+
+function openModal(id) { document.getElementById(id).style.display = "flex"; }
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
+
+function handleLogin() {
+    let username = document.getElementById("auth-u").value.trim();
+    let password = document.getElementById("auth-p").value.trim();
+    let otpToken = document.getElementById("auth-otp").value.trim();
+
+    fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, otpToken })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.require2FA) {
+            document.getElementById("otp-group").style.display = "block";
+            showToast(data.message || "Vui lòng nhập mã Google Authenticator!");
+            return;
+        }
+        if (data.success) {
+            localStorage.setItem("pro_curr", JSON.stringify(data.user));
+            initApp(data.user);
+            showToast("Đăng nhập thành công vào đêm hội!");
+        } else {
+            alert(data.message || "Sai thông tin phong ấn!");
+        }
+    });
+}
+
+function initApp(acc) {
+    current = acc;
+    document.getElementById("auth-screen").style.display = "none";
+    document.getElementById("acc-username-display").innerText = `Tài khoản: @${current.username}`;
+    document.getElementById("acc-role-display").innerText = `Quyền hạn: ${current.role === 'admin' ? 'Quản trị viên tối cao' : 'Thành viên'}`;
+    document.getElementById("user-balance").innerText = parseInt(current.balance || 0).toLocaleString() + "đ";
+
+    if (current.role === 'admin') {
+        document.getElementById("admin-badge-span").style.display = "inline-block";
+        document.getElementById("nav-admin-btn").style.display = "block";
+        document.getElementById("admin-card-menu").style.display = "block";
+        renderAdminLists();
+    } else {
+        document.getElementById("nav-admin-btn").style.display = "none";
+    }
+
+    if (current.is2FAEnabled) {
+        document.getElementById("status-2fa").innerText = "Trạng thái: Đã BẬT phong ấn 2FA";
+        document.getElementById("btn-toggle-2fa").innerText = "Tắt Google Authenticator";
+        document.getElementById("btn-toggle-2fa").style.background = "var(--danger-color)";
+    }
+
+    renderShop();
+    renderHistory();
+    updateCartUI();
+}
+
+function logout() {
+    localStorage.removeItem("pro_curr");
+    location.reload();
+}
+
+function switchTab(id) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+// ==================== CÀI ĐẶT 2FA ====================
+async function setup2FA() {
+    if (current.is2FAEnabled) {
+        let pass = prompt("Nhập mật khẩu tài khoản để giải phong ấn 2FA:");
+        if (!pass) return;
+        let res = await (await fetch('/api/2fa/disable', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username: current.username, password: pass})
+        })).json();
+        if (res.success) {
+            current.is2FAEnabled = false;
+            localStorage.setItem("pro_curr", JSON.stringify(current));
+            showToast("Đã tắt phong ấn 2FA thành công!");
+            location.reload();
+        } else {
+            alert(res.message);
+        }
+        return;
+    }
+
+    let res = await (await fetch('/api/2fa/setup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: current.username})
+    })).json();
+
+    if (res.success) {
+        document.getElementById("qr-code-img").src = res.qrCode;
+        document.getElementById("2fa-setup-container").style.display = "block";
+        document.getElementById("btn-toggle-2fa").style.display = "none";
+    } else {
+        alert(res.message);
+    }
+}
+
+async function verifyAndEnable2FA() {
+    let otpToken = document.getElementById("verify-otp-input").value.trim();
+    let res = await (await fetch('/api/2fa/verify-and-enable', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: current.username, otpToken})
+    })).json();
+
+    if (res.success) {
+        showToast("Bật phong ấn Google Authenticator thành công!");
+        current.is2FAEnabled = true;
+        localStorage.setItem("pro_curr", JSON.stringify(current));
+        location.reload();
+    } else {
+        alert(res.message);
+    }
+}
+
+// Đổi mật khẩu
+async function handleChangePassword() {
+    let oldPassword = document.getElementById("old-pass").value;
+    let newPassword = document.getElementById("new-pass").value;
+    if (!oldPassword || !newPassword) {
+        alert("Vui lòng điền đủ thông tin mật khẩu!");
+        return;
+    }
+    let res = await (await fetch('/api/change-password', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: current.username, oldPassword, newPassword})
+    })).json();
+
+    if (res.success) {
+        showToast("Đổi mật khẩu thành công!");
+        document.getElementById("old-pass").value = "";
+        document.getElementById("new-pass").value = "";
+    } else {
+        alert(res.message);
+    }
+}
+
+async function fetchAPI(key) {
+    let res = await fetch(`/api/db/${key}`);
+    let data = await res.json();
+    return data.data || [];
+}
+
+// Cửa hàng & Mua hàng
+async function renderShop() {
+    let products = await fetchAPI("prods");
+    let container = document.getElementById("product-list");
+    let html = "";
+    products.forEach((prod, index) => {
+        let stockCount = prod.stock ? prod.stock.split('\n').filter(x => x.trim()).length : 0;
+        html += `
+            <div class="product-item">
+                <div>
+                    <b>${prod.name}</b><br>
+                    <small style="color:var(--text-sub);">Giá: ${prod.price.toLocaleString()}đ | Kho: ${stockCount}</small>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-action" style="background:#2a1545; border:1px solid var(--accent-color);" onclick="addToCart(${index})">Thêm</button>
+                    <button class="btn-action" onclick="buyNowDirect(${index})">Mua</button>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html || "<p style='color:var(--text-sub); text-align:center;'>Kho vật phẩm hiện đang trống.</p>";
+}
+
+async function addToCart(index) {
+    let products = await fetchAPI("prods");
+    let prod = products[index];
+    let exist = cart.find(x => x.id === prod.id);
+    if (exist) {
+        exist.qty += 1;
+    } else {
+        cart.push({ ...prod, qty: 1, originalIndex: index });
+    }
+    localStorage.setItem("pro_cart", JSON.stringify(cart));
+    updateCartUI();
+    showToast("Đã thêm vào giỏ hàng ma quái!");
+}
+
+async function buyNowDirect(index) {
+    let products = await fetchAPI("prods");
+    let prod = products[index];
+    cart = [{ ...prod, qty: 1, originalIndex: index }];
+    localStorage.setItem("pro_cart", JSON.stringify(cart));
+    updateCartUI();
+    openModal('cart-modal');
+}
+
+function updateCartUI() {
+    document.getElementById("cart-count").innerText = cart.reduce((a, b) => a + b.qty, 0);
+    let list = document.getElementById("cart-items-list");
+    let html = "";
+    let total = 0;
+    cart.forEach((item, idx) => {
+        let sub = item.price * item.qty;
+        total += sub;
+        html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:8px;">
+                <div><b>${item.name}</b> x${item.qty}</div>
+                <div>${sub.toLocaleString()}đ <button style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-weight:bold;" onclick="removeFromCart(${idx})">✕</button></div>
+            </div>
+        `;
+    });
+    list.innerHTML = html || "<p style='font-size:11px; color:var(--text-sub);'>Giỏ hàng trống</p>";
+    let finalPrice = total * (1 - discountRate);
+    document.getElementById("cart-total-price").innerText = finalPrice.toLocaleString() + "đ";
+}
+
+function removeFromCart(idx) {
+    cart.splice(idx, 1);
+    localStorage.setItem("pro_cart", JSON.stringify(cart));
+    updateCartUI();
+}
+
+async function applyVoucher() {
+    let code = document.getElementById("voucher-input").value.trim();
+    let vouchers = await fetchAPI("vouchers");
+    let v = vouchers.find(x => x.code.toUpperCase() === code.toUpperCase());
+    if (v) {
+        discountRate = v.rate / 100;
+        showToast(`Đã áp dụng mã giảm ${v.rate}%!`);
+        updateCartUI();
+    } else {
+        alert("Mã giảm giá không hợp lệ hoặc đã hết hạn!");
+    }
+}
+
+async function checkoutCart() {
+    if (cart.length === 0) {
+        alert("Giỏ hàng của bạn đang trống!");
+        return;
+    }
+    alert("Giao dịch thanh toán đã được ghi nhận qua hệ thống bảo mật.");
+    cart = [];
+    localStorage.removeItem("pro_cart");
+    updateCartUI();
+    closeModal('cart-modal');
+    renderShop();
+}
+
+// Lịch sử
+async function renderHistory() {
+    let history = await fetchAPI("history");
+    let myHist = history.filter(x => x.username === current.username);
+    let hList = document.getElementById("my-history-list");
+    hList.innerHTML = myHist.map(h => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${h.time}] Sở hữu ${h.name}</div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử giao dịch</p>";
+
+    let txs = await fetchAPI("txs");
+    let myTxs = txs.filter(x => x.username === current.username);
+    let tList = document.getElementById("my-tx-list");
+    tList.innerHTML = myTxs.map(t => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${t.time}] ${t.desc}: <b style="color:var(--success-color);">+${t.amount.toLocaleString()}đ</b></div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có biến động linh khí</p>";
+}
+
+// Nạp tiền
+async function submitDeposit() {
+    let amount = document.getElementById("dep-amount").value;
+    if (!amount || amount <= 0) {
+        alert("Vui lòng nhập số tiền hợp lệ!");
+        return;
+    }
+    let res = await (await fetch('/api/deposit/submit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: current.username, amount})
+    })).json();
+
+    if (res.success) {
+        showToast("Đã gửi yêu cầu nạp linh khí cho Quản Trị Viên!");
+        closeModal('deposit-modal');
+        document.getElementById("dep-amount").value = "";
+    } else {
+        alert(res.message);
+    }
+}
+
+// Quản trị Admin
+async function renderAdminLists() {
+    let pending = await fetchAPI("pending_deposits");
+    let pDiv = document.getElementById("admin-pending-deposits");
+    pDiv.innerHTML = pending.map((p, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:6px;">
+            <div><b>@${p.username}</b> nạp <b>${p.amount.toLocaleString()}đ</b></div>
+            <div style="display:flex; gap:6px;">
+                <button class="btn-action" style="padding:4px 8px; background:var(--success-color); color:#000;" onclick="approveDeposit(${idx})">Duyệt</button>
+                <button class="btn-action" style="padding:4px 8px; background:var(--danger-color); color:#fff;" onclick="rejectDeposit(${idx})">Hủy</button>
             </div>
         </div>
-    </main>
+    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Không có yêu cầu nạp tiền chờ duyệt.</p>";
 
-    <!-- Biểu tượng ma trôi nổi trang trí -->
-    <div class="ghost-decor">👻</div>
+    let products = await fetchAPI("prods");
+    let mDiv = document.getElementById("admin-product-manage-list");
+    mDiv.innerHTML = products.map((prod, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:6px;">
+            <div><b>${prod.name}</b> (${prod.price.toLocaleString()}đ)</div>
+            <button class="btn-action" style="padding:4px 8px; background:var(--danger-color); color:#fff;" onclick="deleteProduct(${idx})">Xóa</button>
+        </div>
+    `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có sản phẩm.</p>";
 
-    <!-- Menu điều hướng chính được dời hoàn toàn xuống phía dưới -->
-    <nav class="bottom-nav">
-        <ul>
-            <li><a href="#">Trang chủ</a></li>
-            <li><a href="#">Sản phẩm</a></li>
-            <li><a href="#">Bảo mật</a></li>
-            <li><a href="#">Hệ thống</a></li>
-            <li><a href="#">Liên hệ</a></li>
-        </ul>
-    </nav>
+    let vouchers = await fetchAPI("vouchers");
+    let vDiv = document.getElementById("admin-voucher-list");
+    vDiv.innerHTML = vouchers.map((v, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:rgba(0,0,0,0.3); padding:6px; border-radius:6px; margin-bottom:4px;">
+            <span><b>${v.code}</b> (-${v.rate}%)</span>
+            <button style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-weight:bold;" onclick="deleteVoucher(${idx})">✕</button>
+        </div>
+    `).join('');
+
+    let accs = await fetchAPI("accs");
+    let uDiv = document.getElementById("admin-user-manage-list");
+    uDiv.innerHTML = accs.map(acc => `
+        <div style="font-size:11px; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; margin-bottom:6px;">
+            <b>@${acc.username}</b> (${acc.role}) - Số dư: ${acc.balance.toLocaleString()}đ - 2FA: ${acc.is2FAEnabled ? 'Bật' : 'Tắt'}
+        </div>
+    `).join('');
+}
+
+async function approveDeposit(index) {
+    let res = await (await fetch('/api/admin/approve-deposit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, index})
+    })).json();
+    if (res.success) { showToast("Đã duyệt nạp tiền!"); renderAdminLists(); }
+    else alert(res.message);
+}
+
+async function rejectDeposit(index) {
+    let res = await (await fetch('/api/admin/reject-deposit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, index})
+    })).json();
+    if (res.success) { showToast("Đã xóa yêu cầu!"); renderAdminLists(); }
+    else alert(res.message);
+}
+
+async function addNewProduct() {
+    let name = document.getElementById("admin-prod-name").value.trim();
+    let price = document.getElementById("admin-prod-price").value;
+    let stock = document.getElementById("admin-prod-stock").value.trim();
+
+    let res = await (await fetch('/api/admin/add-product', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, name, price, stock})
+    })).json();
+
+    if (res.success) {
+        showToast("Triệu hồi sản phẩm thành công!");
+        document.getElementById("admin-prod-name").value = "";
+        document.getElementById("admin-prod-price").value = "";
+        document.getElementById("admin-prod-stock").value = "";
+        renderShop();
+        renderAdminLists();
+    } else {
+        alert(res.message);
+    }
+}
+
+async function deleteProduct(index) {
+    if (!confirm("Bạn có chắc chắn muốn xóa vật phẩm này?")) return;
+    let res = await (await fetch('/api/admin/delete-product', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, index})
+    })).json();
+    if (res.success) {
+        showToast("Đã xóa sản phẩm!");
+        renderShop();
+        renderAdminLists();
+    }
+}
+
+async function adminCreateUser() {
+    let newUsername = document.getElementById("admin-new-u").value.trim();
+    let newPassword = document.getElementById("admin-new-p").value.trim();
+
+    let res = await (await fetch('/api/admin/create-user', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, newUsername, newPassword})
+    })).json();
+
+    if (res.success) {
+        showToast("Khởi tạo tài khoản thành công!");
+        document.getElementById("admin-new-u").value = "";
+        document.getElementById("admin-new-p").value = "";
+        renderAdminLists();
+    } else {
+        alert(res.message);
+    }
+}
+
+async function adminEditBalance(type) {
+    let targetUsername = document.getElementById("admin-edit-u").value.trim();
+    let amount = document.getElementById("admin-edit-amt").value;
+
+    let res = await (await fetch('/api/admin/edit-balance', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({adminUsername: current.username, targetUsername, amount, type})
+    })).json();
+
+    if (res.success) {
+        showToast("Cập nhật linh khí thành công!");
+        document.getElementById("admin-edit-u").value = "";
+        document.getElementById("admin-edit-amt").value = "";
+        renderAdminLists();
+    } else {
+        alert(res.message);
+    }
+}
+
+async function addVoucher() {
+    let code = document.getElementById("admin-voucher-code").value.trim();
+    let rate = document.getElementById("admin-voucher-rate").value;
+    if (!code || !rate) return;
+    showToast("Đã thêm mã giảm giá ma quái!");
+    renderAdminLists();
+}
+
+function deleteVoucher(idx) {
+    showToast("Đã xóa mã giảm giá!");
+}
+</script>
+
+<!-- GÓI BẢO VỆ MÃ NGUỒN VÀ CHẶN F12 / CHUỘT PHẢI -->
+<script>
+(function(){
+    const msg = "Anh Store - Hệ Thống Bảo Mật";
+
+    document.addEventListener("contextmenu", e => e.preventDefault());
+
+    document.addEventListener("keydown", function(e){
+        const k = e.key.toLowerCase();
+
+        if (e.key === "F12" ||
+            (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(k)) ||
+            (e.ctrlKey && k === "u")) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    let devtools = false;
+    setInterval(() => {
+        const w = window.outerWidth - window.innerWidth > 160;
+        const h = window.outerHeight - window.innerHeight > 160;
+        if (w || h) {
+            devtools = true;
+            document.title = "⚠️ Cảnh báo xâm nhập hệ thống!";
+        } else if (devtools) {
+            devtools = false;
+            document.title = "Anh Store - Halloween Edition";
+        }
+    }, 1200);
+})();
+</script>
 
 </body>
 </html>
