@@ -3,38 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MinhAnh Store - Quản Trị Bảo Mật</title>
+    <title>MinhAnh Store - Cửa Hàng Số</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); width: 100%; max-width: 450px; border: 1px solid #334155; }
-        h2 { text-align: center; margin-bottom: 20px; color: #38bdf8; font-size: 24px; }
-        .form-group { margin-bottom: 18px; }
-        label { display: block; margin-bottom: 6px; font-size: 14px; color: #94a3b8; }
-        input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 15px; transition: 0.2s; }
-        input:focus { border-color: #38bdf8; outline: none; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
-        button { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        body { background: #0f172a; color: #f8fafc; padding: 20px; min-height: 100vh; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 600px; }
+        .banner { background: #1e293b; border: 1px dashed #38bdf8; padding: 12px; border-radius: 8px; text-align: center; color: #38bdf8; font-size: 14px; margin-bottom: 20px; font-weight: 500; }
+        .card { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .header-title h3 { color: #f8fafc; font-size: 18px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #94a3b8; }
+        input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px; }
+        input:focus { border-color: #38bdf8; outline: none; }
+        button { padding: 10px 16px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         button:hover { background: #0ea5e9; }
-        .btn-danger { background: #e11d48; margin-top: 10px; }
+        .btn-danger { background: #e11d48; }
         .btn-danger:hover { background: #f43f5e; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .product-item { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
         .hidden { display: none; }
-        .alert { padding: 12px; margin-bottom: 20px; border-radius: 6px; font-size: 14px; text-align: center; background: #334155; color: #cbd5e1; }
-        .user-info { background: #0f172a; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #334155; }
-        hr { border: 0; border-top: 1px solid #334155; margin: 20px 0; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; background: #334155; color: #38bdf8; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>MinhAnh Store</h2>
-    <div id="status-message" class="alert">Đang kiểm tra bảo mật...</div>
+<div class="container">
+    <div class="banner">
+        Mã giảm giá "MINHANH2K" giảm ngay 10% tổng đơn hàng! 🔒
+    </div>
 
-    <!-- Form Đăng Nhập -->
-    <div id="login-section">
+    <div class="header-title">
+        <h3>⚡ MinhAnh Store</h3>
+        <div>
+            <button onclick="toggleTheme()" style="background: #475569; padding: 6px 12px; font-size: 13px;">Theme</button>
+            <button id="logout-btn" onclick="logout()" class="btn-danger hidden" style="padding: 6px 12px; font-size: 13px; margin-left: 5px;">Thoát</button>
+        </div>
+    </div>
+
+    <!-- KHU VỰC ĐĂNG NHẬP -->
+    <div id="login-card" class="card">
+        <h3 style="margin-bottom: 15px; color: #38bdf8;">Đăng Nhập Hệ Thống</h3>
         <div class="form-group">
             <label>Tên đăng nhập</label>
-            <input type="text" id="username" placeholder="Nhập tài khoản admin...">
+            <input type="text" id="username" placeholder="Nhập tài khoản...">
         </div>
         <div class="form-group">
             <label>Mật khẩu</label>
@@ -44,43 +59,121 @@
             <label>Mã Google Authenticator (6 số)</label>
             <input type="text" id="otpToken" placeholder="Nhập mã OTP từ app...">
         </div>
-        <button onclick="login()">Đăng Nhập Hệ Thống</button>
+        <button onclick="login()" style="width: 100%;">Đăng Nhập</button>
     </div>
 
-    <!-- Khu vực Admin Xịn Sò -->
-    <div id="admin-section" class="hidden">
-        <div class="user-info">
-            <p><strong>Quản trị viên:</strong> <span id="user-display" style="color: #38bdf8;"></span></p>
-            <p><strong>Số dư quỹ:</strong> <span id="balance-display" style="color: #4ade80;">0</span>đ</p>
-        </div>
+    <!-- THÔNG TIN TÀI KHOẢN (Sau khi đăng nhập) -->
+    <div id="user-card" class="card hidden">
+        <h3 style="color: #38bdf8; margin-bottom: 12px;">Thông tin tài khoản</h3>
+        <p style="font-size: 14px; margin-bottom: 6px;">Tài khoản: <b id="disp-username" style="color: #f1f5f9;"></b></p>
+        <p style="font-size: 14px; margin-bottom: 6px;">Quyền hạn: <span id="disp-role" class="badge"></span></p>
+        <p style="font-size: 14px; margin-bottom: 12px;">Số dư: <b id="disp-balance" style="color: #4ade80;">0</b>đ</p>
+        <button class="btn-success" onclick="alert('Vui lòng liên hệ Admin để nạp thêm số dư quỹ!')">Nạp tiền ngay</button>
+    </div>
 
-        <h3 style="font-size: 16px; margin-bottom: 10px; color: #cbd5e1;">Thêm Sản Phẩm Mới</h3>
-        <div class="form-group">
-            <input type="text" id="prodName" placeholder="Tên sản phẩm...">
+    <!-- BẢO MẬT 2FA -->
+    <div id="security-card" class="card hidden">
+        <h3 style="color: #38bdf8; margin-bottom: 12px;">Bảo mật Google Authenticator (2FA)</h3>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Trạng thái: <b id="fa-status" style="color: #f43f5e;">Đang tắt</b></p>
+        <button id="btn-setup-2fa" onclick="setup2FA()">Bật Google Authenticator</button>
+        
+        <div id="qr-box" class="hidden" style="margin-top: 15px; text-align: center;">
+            <p style="font-size: 13px; margin-bottom: 10px;">Quét mã QR bằng ứng dụng Google Authenticator:</p>
+            <img id="qr-img" src="" alt="QR 2FA" style="background: white; padding: 5px; border-radius: 6px; max-width: 180px;">
+            <div class="form-group" style="margin-top: 10px;">
+                <input type="text" id="verifyOtp" placeholder="Nhập mã 6 số xác nhận...">
+            </div>
+            <button class="btn-success" onclick="verify2FA()">Xác Nhận Kích Hoạt</button>
         </div>
-        <div class="form-group">
-            <input type="number" id="prodPrice" placeholder="Giá tiền (VNĐ)...">
-        </div>
-        <button onclick="addProduct()">Thêm Sản Phẩm</button>
+    </div>
 
-        <button onclick="logout()" class="btn-danger">Đăng Xuất</button>
+    <!-- ĐỔI MẬT KHẨU -->
+    <div id="password-card" class="card hidden">
+        <h3 style="color: #38bdf8; margin-bottom: 12px;">Đổi mật khẩu</h3>
+        <div class="form-group">
+            <input type="password" id="oldPass" placeholder="Mật khẩu cũ">
+        </div>
+        <div class="form-group">
+            <input type="password" id="newPass" placeholder="Mật khẩu mới">
+        </div>
+        <button onclick="changePassword()">Lưu mật khẩu mới</button>
+    </div>
+
+    <!-- DANH SÁCH SẢN PHẨM / MUA HÀNG -->
+    <div class="card">
+        <h3 style="color: #38bdf8; margin-bottom: 12px;">Cửa Hàng Sản Phẩm Số</h3>
+        <div id="product-list" class="grid">
+            <p>Đang tải sản phẩm...</p>
+        </div>
+    </div>
+
+    <!-- KHU VỰC ADMIN (Thêm sản phẩm) -->
+    <div id="admin-card" class="card hidden" style="border-color: #f59e0b;">
+        <h3 style="color: #f59e0b; margin-bottom: 12px;">Quản Trị Viên (Thêm sản phẩm)</h3>
+        <div class="form-group">
+            <input type="text" id="pName" placeholder="Tên sản phẩm...">
+        </div>
+        <div class="form-group">
+            <input type="number" id="pPrice" placeholder="Giá tiền (VNĐ)...">
+        </div>
+        <button class="btn-success" onclick="addProduct()">Thêm Sản Phẩm</button>
     </div>
 </div>
 
 <script>
+    let currentUser = null;
+
+    async function init() {
+        await checkAuth();
+        await loadProducts();
+    }
+
     async function checkAuth() {
         const res = await fetch('/api/me');
         const data = await res.json();
-        const msgBox = document.getElementById('status-message');
-
         if (data.success) {
-            msgBox.style.display = 'none';
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('admin-section').classList.remove('hidden');
-            document.getElementById('user-display').innerText = data.user.username;
-            document.getElementById('balance-display').innerText = data.user.balance.toLocaleString();
+            currentUser = data.user;
+            document.getElementById('login-card').classList.add('hidden');
+            document.getElementById('logout-btn').classList.remove('hidden');
+            document.getElementById('user-card').classList.remove('hidden');
+            document.getElementById('security-card').classList.remove('hidden');
+            document.getElementById('password-card').classList.remove('hidden');
+
+            document.getElementById('disp-username').innerText = '@' + currentUser.username;
+            document.getElementById('disp-role').innerText = currentUser.role === 'admin' ? 'Quản trị viên' : 'Thành viên';
+            document.getElementById('disp-balance').innerText = currentUser.balance.toLocaleString();
+
+            if (currentUser.is2FAEnabled) {
+                document.getElementById('fa-status').innerText = 'Đang bật';
+                document.getElementById('fa-status').style.color = '#4ade80';
+                document.getElementById('btn-setup-2fa').classList.add('hidden');
+            }
+
+            if (currentUser.role === 'admin') {
+                document.getElementById('admin-card').classList.remove('hidden');
+            }
+        }
+    }
+
+    async function loadProducts() {
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        const list = document.getElementById('product-list');
+        if (data.success && data.prods.length > 0) {
+            list.innerHTML = '';
+            data.prods.forEach(p => {
+                list.innerHTML += `
+                    <div class="product-item">
+                        <div>
+                            <div style="font-weight: 600; color: #f1f5f9; font-size: 15px; margin-bottom: 4px;">${p.name}</div>
+                            <div style="color: #4ade80; font-weight: bold; font-size: 14px;">${p.price.toLocaleString()} VNĐ</div>
+                        </div>
+                        <button class="btn-success" onclick="buyProduct('${p.id}')">Mua Ngay</button>
+                    </div>
+                `;
+            });
         } else {
-            msgBox.innerText = 'Vui lòng đăng nhập để quản trị.';
+            list.innerHTML = '<p style="color: #94a3b8;">Chưa có sản phẩm nào.</p>';
         }
     }
 
@@ -106,10 +199,64 @@
         }
     }
 
-    async function addProduct() {
-        const name = document.getElementById('prodName').value;
-        const price = document.getElementById('prodPrice').value;
+    async function setup2FA() {
+        const res = await fetch('/api/2fa/setup', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('qr-img').src = data.qrCodeUrl;
+            document.getElementById('qr-box').classList.remove('hidden');
+        } else {
+            alert(data.message);
+        }
+    }
 
+    async function verify2FA() {
+        const otpToken = document.getElementById('verifyOtp').value;
+        const res = await fetch('/api/2fa/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ otpToken })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) location.reload();
+    }
+
+    async function changePassword() {
+        const oldPassword = document.getElementById('oldPass').value;
+        const newPassword = document.getElementById('newPass').value;
+        const res = await fetch('/api/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oldPassword, newPassword })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) {
+            document.getElementById('oldPass').value = '';
+            document.getElementById('newPass').value = '';
+        }
+    }
+
+    async function buyProduct(id) {
+        if (!currentUser) {
+            alert('Vui lòng đăng nhập để mua hàng!');
+            return;
+        }
+        if (!confirm('Xác nhận mua sản phẩm này?')) return;
+        const res = await fetch('/api/buy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId: id })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) location.reload();
+    }
+
+    async function addProduct() {
+        const name = document.getElementById('pName').value;
+        const price = document.getElementById('pPrice').value;
         const res = await fetch('/api/admin/add-product', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -118,8 +265,9 @@
         const data = await res.json();
         alert(data.message);
         if (data.success) {
-            document.getElementById('prodName').value = '';
-            document.getElementById('prodPrice').value = '';
+            document.getElementById('pName').value = '';
+            document.getElementById('pPrice').value = '';
+            loadProducts();
         }
     }
 
@@ -128,7 +276,11 @@
         location.reload();
     }
 
-    checkAuth();
+    function toggleTheme() {
+        alert('Giao diện tối (Dark Mode) đang được kích hoạt tối ưu!');
+    }
+
+    init();
 </script>
 
 </body>
