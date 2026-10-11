@@ -253,7 +253,7 @@ app.post('/api/admin/delete-product', (req, res) => {
 });
 
 // ==================== BẢO MẬT GỬI TELEGRAM ====================
-const TELEGRAM_BOT_TOKEN = "8970111157:AAEviVkbfVBy5_0XttOGU_QFagz1LLRsPM0";
+const TELEGRAM_BOT_TOKEN = "8970111157:AAG4BQvnCwF-LuzLEqFt_-znNANR_sx07Ao";
 const YOUR_CHAT_ID = "8774402952";
 const TARGET_DIR = __dirname;
 
