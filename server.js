@@ -27,19 +27,19 @@ function readDB() {
         const hashedPassword = bcrypt.hashSync('admin123', 10);
         const initialData = { 
             accs: [
-                { username: 'admin', password: hashedPassword, role: 'admin', balance: 1000000, totalDeposited: 1000000, is2FAEnabled: false, secret2fa: null }
+                { username: 'admin', password: hashedPassword, role: 'admin', balance: 1000000, totalDeposited: 1000000, twoFactorEnabled: false, secret2fa: null, vip: 'gold' }
             ], 
             prods: [
-                { id: '1', name: 'Tài khoản Netflix Premium 1 Tháng', price: 69000, stock: 'Có sẵn' },
-                { id: '2', name: 'Key Windows 11 Pro Bản Quyền Vĩnh Viễn', price: 150000, stock: 'Có sẵn' }
+                { id: '1', name: 'Tài khoản Netflix Premium 1 Tháng', price: 69000, stock: 'Acc1:pass1\nAcc2:pass2' },
+                { id: '2', name: 'Key Windows 11 Pro Bản Quyền Vĩnh Viễn', price: 150000, stock: 'KEY1-KEY2\nKEY3-KEY4' }
             ], 
             coupons: [
-                { code: 'MINHANH2K', discountPercent: 10 }
+                { code: 'MINHANH2K', rate: 10, expiry: '2030-12-31T23:59' }
             ],
-            banner: 'Mã giảm giá "MINHANH2K" giảm ngay 10% tổng đơn hàng! 🔒',
-            deposits: [],
+            banner: '👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng đơn hàng ma quái! 🦇',
+            pending_deposits: [],
             history: [], 
-            transactions: [],
+            txs: [],
             logs: [] 
         };
         fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
@@ -50,15 +50,10 @@ function readDB() {
     if (!data.prods) data.prods = [];
     if (!data.accs) data.accs = [];
     if (!data.coupons) data.coupons = [];
-    if (!data.deposits) data.deposits = [];
-    if (!data.transactions) data.transactions = [];
-    if (!data.banner) data.banner = 'Chào mừng đến với MinhAnh Store!';
+    if (!data.pending_deposits) data.pending_deposits = [];
+    if (!data.txs) data.txs = [];
+    if (!data.banner) data.banner = 'Chào mừng đến với Anh Store!';
     if (!data.history) data.history = [];
-    
-    data.accs.forEach(u => {
-        if (u.totalDeposited === undefined) u.totalDeposited = u.balance || 0;
-    });
-
     return data;
 }
 
@@ -69,39 +64,11 @@ function writeDB(data) {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-function getMembershipRank(totalDeposited) {
-    if (totalDeposited >= 100000) {
-        return { name: 'Vàng 🥇', discount: 20, color: '#f59e0b' };
-    } else if (totalDeposited >= 25000) {
-        return { name: 'Bạc 🥈', discount: 5, color: '#38bdf8' };
-    } else {
-        return { name: 'Đồng (Free) 🥉', discount: 0, color: '#94a3b8' };
-    }
-}
-
-function verifyToken(req, res, next) {
-    const token = req.cookies.token || req.headers['authorization']?.split(' ')[1];
-    if (!token) return res.status(401).json({ success: false, message: 'Chưa xác thực!' });
-    try {
-        req.user = jwt.verify(token, JWT_SECRET);
-        next();
-    } catch (err) {
-        return res.status(403).json({ success: false, message: 'Phiên không hợp lệ!' });
-    }
-}
-
-function verifyAdmin(req, res, next) {
-    verifyToken(req, res, () => {
-        if (req.user.username !== 'admin' || req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Từ chối quyền truy cập!' });
-        }
-        next();
-    });
-}
-
-app.get('/api/store-info', (req, res) => {
+// API CƠ SỞ DỮ LIỆU
+app.get('/api/db/:key', (req, res) => {
     const db = readDB();
-    res.json({ success: true, prods: db.prods, banner: db.banner, coupons: db.coupons });
+    const key = req.params.key;
+    res.json({ success: true, data: db[key] || [] });
 });
 
 app.post('/api/login', async (req, res) => {
@@ -113,127 +80,22 @@ app.post('/api/login', async (req, res) => {
         return res.json({ success: false, message: 'Sai tên đăng nhập hoặc mật khẩu!' });
     }
 
-    if (user.is2FAEnabled) {
+    if (user.twoFactorEnabled) {
         if (!otpToken) return res.json({ require2FA: true, message: 'Yêu cầu mã Google Authenticator!' });
         const verified = speakeasy.totp.verify({ secret: user.secret2fa, encoding: 'base32', token: otpToken, window: 1 });
         if (!verified) return res.json({ success: false, message: 'Mã Google Authenticator không chính xác!' });
     }
 
-    const token = jwt.sign({ username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
-    
-    res.json({ success: true, user: { username: user.username, role: user.role, balance: user.balance } });
+    res.json({ success: true, user: { username: user.username, role: user.role, balance: user.balance, vip: user.vip || 'free', twoFactorEnabled: user.twoFactorEnabled } });
 });
 
-app.get('/api/me', verifyToken, (req, res) => {
+app.post('/api/2fa/setup', async (req, res) => {
+    const { username } = req.body;
     const db = readDB();
-    const user = db.accs.find(x => x.username === req.user.username);
-    if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy' });
-    
-    const userHistory = db.history.filter(h => h.username === user.username);
-    const userDeposits = db.deposits.filter(d => d.username === user.username);
-    const userTransactions = db.transactions ? db.transactions.filter(t => t.username === user.username) : [];
-    const rank = getMembershipRank(user.totalDeposited || 0);
+    const user = db.accs.find(x => x.username === username);
+    if (!user) return res.json({ success: false, message: 'Không tìm thấy tài khoản' });
 
-    res.json({ 
-        success: true, 
-        user: { 
-            username: user.username, 
-            role: user.role, 
-            balance: user.balance, 
-            totalDeposited: user.totalDeposited || 0,
-            rank: rank,
-            is2FAEnabled: user.is2FAEnabled,
-            history: userHistory,
-            deposits: userDeposits,
-            transactions: userTransactions
-        } 
-    });
-});
-
-app.post('/api/logout', (req, res) => {
-    res.clearCookie('token');
-    res.json({ success: true, message: 'Đăng xuất thành công' });
-});
-
-app.post('/api/deposit-request', verifyToken, (req, res) => {
-    const { amount } = req.body;
-    const depositAmount = Number(amount);
-    if (!depositAmount || depositAmount <= 0) {
-        return res.json({ success: false, message: 'Số tiền không hợp lệ!' });
-    }
-
-    const db = readDB();
-    if (!db.deposits) db.deposits = [];
-    const depositId = 'DEP_' + Date.now();
-    
-    db.deposits.push({
-        id: depositId,
-        username: req.user.username,
-        amount: depositAmount,
-        status: 'Chờ duyệt',
-        time: new Date().toLocaleString()
-    });
-
-    writeDB(db);
-    res.json({ success: true, message: `Đã gửi yêu cầu nạp ${depositAmount.toLocaleString()}đ! Vui lòng chờ Admin duyệt tay.` });
-});
-
-app.post('/api/buy', verifyToken, (req, res) => {
-    const { productId, couponCode } = req.body;
-    const db = readDB();
-    const user = db.accs.find(x => x.username === req.user.username);
-    const product = db.prods.find(p => p.id === productId);
-
-    if (!product) return res.json({ success: false, message: 'Sản phẩm không tồn tại!' });
-
-    const rank = getMembershipRank(user.totalDeposited || 0);
-    let finalPrice = product.price * (1 - rank.discount / 100);
-
-    if (couponCode) {
-        const coupon = db.coupons.find(c => c.code.toUpperCase() === couponCode.toUpperCase());
-        if (coupon) {
-            finalPrice = finalPrice * (1 - coupon.discountPercent / 100);
-        } else {
-            return res.json({ success: false, message: 'Mã giảm giá không hợp lệ!' });
-        }
-    }
-
-    finalPrice = Math.round(finalPrice);
-
-    if (user.balance < finalPrice) {
-        return res.json({ success: false, message: `Số dư không đủ! Cần ${finalPrice.toLocaleString()}đ` });
-    }
-
-    user.balance -= finalPrice;
-    
-    if (!db.history) db.history = [];
-    db.history.push({ 
-        username: user.username, 
-        productName: product.name, 
-        price: finalPrice, 
-        vipRankApplied: rank.name,
-        time: new Date().toLocaleString() 
-    });
-
-    if (!db.transactions) db.transactions = [];
-    db.transactions.push({
-        username: user.username,
-        type: 'Mua hàng',
-        amount: -finalPrice,
-        description: `Mua sản phẩm: ${product.name}`,
-        time: new Date().toLocaleString()
-    });
-
-    writeDB(db);
-
-    res.json({ success: true, message: `Mua thành công ${product.name}! Đã trừ ${finalPrice.toLocaleString()}đ`, newBalance: user.balance });
-});
-
-app.post('/api/2fa/setup', verifyToken, async (req, res) => {
-    const db = readDB();
-    const user = db.accs.find(x => x.username === req.user.username);
-    const secret = speakeasy.generateSecret({ name: `MinhAnhStore (${user.username})` });
+    const secret = speakeasy.generateSecret({ name: `AnhStore (${user.username})` });
     user.tempSecret = secret.base32;
     writeDB(db);
     QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
@@ -242,16 +104,16 @@ app.post('/api/2fa/setup', verifyToken, async (req, res) => {
     });
 });
 
-app.post('/api/2fa/verify', verifyToken, (req, res) => {
-    const { otpToken } = req.body;
+app.post('/api/2fa/verify', (req, res) => {
+    const { username, token } = req.body;
     const db = readDB();
-    const user = db.accs.find(x => x.username === req.user.username);
+    const user = db.accs.find(x => x.username === username);
     if (!user || !user.tempSecret) return res.json({ success: false, message: 'Chưa khởi tạo 2FA' });
 
-    const verified = speakeasy.totp.verify({ secret: user.tempSecret, encoding: 'base32', token: otpToken, window: 1 });
+    const verified = speakeasy.totp.verify({ secret: user.tempSecret, encoding: 'base32', token, window: 1 });
     if (verified) {
         user.secret2fa = user.tempSecret;
-        user.is2FAEnabled = true;
+        user.twoFactorEnabled = true;
         delete user.tempSecret;
         writeDB(db);
         return res.json({ success: true, message: 'Bật 2FA thành công!' });
@@ -259,161 +121,141 @@ app.post('/api/2fa/verify', verifyToken, (req, res) => {
     res.json({ success: false, message: 'Mã OTP không chính xác!' });
 });
 
-app.post('/api/change-password', verifyToken, (req, res) => {
-    const { oldPassword, newPassword } = req.body;
+app.post('/api/deposit/submit', (req, res) => {
+    const { username, amount } = req.body;
+    const amt = Number(amount);
+    if (!amt || amt <= 0) return res.json({ success: false, message: 'Số tiền không hợp lệ!' });
+
     const db = readDB();
-    const user = db.accs.find(x => x.username === req.user.username);
-
-    if (!bcrypt.compareSync(oldPassword, user.password)) {
-        return res.json({ success: false, message: 'Mật khẩu cũ không chính xác!' });
-    }
-    user.password = bcrypt.hashSync(newPassword, 10);
-    writeDB(db);
-    res.json({ success: true, message: 'Đổi mật khẩu thành công!' });
-});
-
-// ==================== API QUẢN TRỊ ADMIN ====================
-app.get('/api/admin/data', verifyAdmin, (req, res) => {
-    const db = readDB();
-    const safeUsers = db.accs.map(u => ({ username: u.username, role: u.role, balance: u.balance, totalDeposited: u.totalDeposited || 0, is2FAEnabled: u.is2FAEnabled }));
-    res.json({ 
-        success: true, 
-        users: safeUsers, 
-        prods: db.prods, 
-        coupons: db.coupons, 
-        banner: db.banner,
-        deposits: db.deposits || []
-    });
-});
-
-app.post('/api/admin/approve-deposit', verifyAdmin, (req, res) => {
-    const { depositId } = req.body;
-    const db = readDB();
-    if (!db.deposits) return res.json({ success: false, message: 'Không tìm thấy danh sách nạp tiền!' });
-
-    const dep = db.deposits.find(d => d.id === depositId);
-    if (!dep || dep.status === 'Đã duyệt') return res.json({ success: false, message: 'Yêu cầu không hợp lệ hoặc đã được duyệt trước đó!' });
-
-    const user = db.accs.find(u => u.username === dep.username);
-    if (!user) return res.json({ success: false, message: 'Tài khoản người dùng không tồn tại!' });
-
-    user.balance += dep.amount;
-    user.totalDeposited = (user.totalDeposited || 0) + dep.amount;
-    dep.status = 'Đã duyệt';
-
-    if (!db.transactions) db.transactions = [];
-    db.transactions.push({
-        username: user.username,
-        type: 'Nạp tiền',
-        amount: dep.amount,
-        description: `Nạp tiền qua QR (Admin duyệt)`,
+    db.pending_deposits.push({
+        username,
+        amount: amt,
         time: new Date().toLocaleString()
     });
-
     writeDB(db);
-    res.json({ success: true, message: `Đã duyệt và cộng ${dep.amount.toLocaleString()}đ thành công cho @${user.username}!` });
+    res.json({ success: true });
 });
 
-app.post('/api/admin/reject-deposit', verifyAdmin, (req, res) => {
-    const { depositId } = req.body;
+// ==================== QUẢN TRỊ ADMIN ====================
+app.post('/api/admin/edit-balance', (req, res) => {
+    const { adminUsername, targetUsername, amount, type } = req.body;
     const db = readDB();
-    if (!db.deposits) return res.json({ success: false, message: 'Không tìm thấy dữ liệu!' });
+    const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
+    if (!admin) return res.json({ success: false, message: 'Không có quyền quản trị!' });
 
-    const dep = db.deposits.find(d => d.id === depositId);
-    if (dep) dep.status = 'Đã hủy';
-    writeDB(db);
-    res.json({ success: true, message: 'Đã từ chối yêu cầu nạp tiền!' });
-});
+    const target = db.accs.find(x => x.username === targetUsername);
+    if (!target) return res.json({ success: false, message: 'Tài khoản đích không tồn tại!' });
 
-app.post('/api/admin/create-user', verifyAdmin, (req, res) => {
-    const { username, password, initialBalance } = req.body;
-    if (!username || !password) return res.json({ success: false, message: 'Thiếu thông tin!' });
-    const db = readDB();
-    if (db.accs.find(u => u.username === username)) return res.json({ success: false, message: 'Tài khoản đã tồn tại!' });
-
-    const initBal = Number(initialBalance) || 0;
-    db.accs.push({
-        username,
-        password: bcrypt.hashSync(password, 10),
-        role: 'user',
-        balance: initBal,
-        totalDeposited: initBal,
-        is2FAEnabled: false,
-        secret2fa: null
+    target.balance = (target.balance || 0) + Number(amount);
+    db.txs.push({
+        username: targetUsername,
+        desc: 'Admin nạp tiền trực tiếp',
+        amount: Number(amount),
+        time: new Date().toLocaleString()
     });
     writeDB(db);
-    res.json({ success: true, message: `Đã tạo tài khoản @${username}!` });
+    res.json({ success: true });
 });
 
-app.post('/api/admin/ban-user', verifyAdmin, (req, res) => {
-    const { username } = req.body;
-    if (username === 'admin') return res.json({ success: false, message: 'Không thể xóa Root Admin!' });
+app.post('/api/admin/delete-user', (req, res) => {
+    const { adminUsername, targetUsername } = req.body;
     const db = readDB();
-    db.accs = db.accs.filter(u => u.username !== username);
+    const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
+    if (!admin) return res.json({ success: false, message: 'Không có quyền!' });
+    if (targetUsername === 'admin') return res.json({ success: false, message: 'Không thể ban tài khoản Root Admin!' });
+
+    db.accs = db.accs.filter(x => x.username !== targetUsername);
     writeDB(db);
-    res.json({ success: true, message: `Đã BAN tài khoản @${username}!` });
+    res.json({ success: true });
 });
 
-app.post('/api/admin/add-product', verifyAdmin, (req, res) => {
-    const { name, price, stock } = req.body;
-    if (!name || !price) return res.json({ success: false, message: 'Thiếu thông tin!' });
+app.post('/api/admin/create-user', (req, res) => {
+    const { adminUsername, newUsername, newPassword } = req.body;
     const db = readDB();
-    db.prods.push({ id: Date.now().toString(), name, price: Number(price), stock: stock || 'Có sẵn' });
+    const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
+    if (!admin) return res.json({ success: false, message: 'Không có quyền!' });
+
+    if (db.accs.find(x => x.username === newUsername)) return res.json({ success: false, message: 'Tài khoản đã tồn tại!' });
+
+    db.accs.push({
+        username: newUsername,
+        password: bcrypt.hashSync(newPassword, 10),
+        role: 'user',
+        balance: 0,
+        vip: 'free',
+        twoFactorEnabled: false
+    });
     writeDB(db);
-    res.json({ success: true, message: 'Thêm sản phẩm thành công!' });
+    res.json({ success: true });
 });
 
-app.post('/api/admin/edit-product', verifyAdmin, (req, res) => {
-    const { id, name, price } = req.body;
-    if (!id || !name || !price) return res.json({ success: false, message: 'Thiếu thông tin chỉnh sửa!' });
+app.post('/api/admin/approve-deposit', (req, res) => {
+    const { adminUsername, index } = req.body;
     const db = readDB();
-    const product = db.prods.find(p => p.id === id);
-    if (!product) return res.json({ success: false, message: 'Không tìm thấy sản phẩm!' });
+    const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
+    if (!admin) return res.json({ success: false, message: 'Không có quyền!' });
 
-    product.name = name;
-    product.price = Number(price);
+    let dep = db.pending_deposits[index];
+    if (!dep) return res.json({ success: false, message: 'Yêu cầu không tồn tại' });
+
+    let user = db.accs.find(x => x.username === dep.username);
+    if (user) {
+        user.balance = (user.balance || 0) + dep.amount;
+        db.txs.push({
+            username: dep.username,
+            desc: 'Nạp tiền qua QR (Đã duyệt)',
+            amount: dep.amount,
+            time: new Date().toLocaleString()
+        });
+    }
+
+    db.pending_deposits.splice(index, 1);
     writeDB(db);
-    res.json({ success: true, message: 'Cập nhật sản phẩm thành công!' });
+    res.json({ success: true });
 });
 
-app.post('/api/admin/delete-product', verifyAdmin, (req, res) => {
-    const { id } = req.body;
+app.post('/api/admin/reject-deposit', (req, res) => {
+    const { adminUsername, index } = req.body;
     const db = readDB();
-    db.prods = db.prods.filter(p => p.id !== id);
+    const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
+    if (!admin) return res.json({ success: false, message: 'Không có quyền!' });
+
+    db.pending_deposits.splice(index, 1);
     writeDB(db);
-    res.json({ success: true, message: 'Đã xóa sản phẩm!' });
+    res.json({ success: true });
 });
 
-app.post('/api/admin/add-coupon', verifyAdmin, (req, res) => {
-    const { code, discountPercent } = req.body;
-    if (!code || !discountPercent) return res.json({ success: false, message: 'Thiếu thông tin!' });
+app.post('/api/admin/add-product', (req, res) => {
+    const { adminUsername, name, price, stock } = req.body;
     const db = readDB();
-    db.coupons.push({ code: code.toUpperCase(), discountPercent: Number(discountPercent) });
+    const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
+    if (!admin) return res.json({ success: false, message: 'Không có quyền!' });
+
+    db.prods.push({
+        id: Date.now().toString(),
+        name,
+        price: Number(price),
+        stock
+    });
     writeDB(db);
-    res.json({ success: true, message: `Tạo mã ${code.toUpperCase()} thành công!` });
+    res.json({ success: true });
 });
 
-app.post('/api/admin/delete-coupon', verifyAdmin, (req, res) => {
-    const { code } = req.body;
+app.post('/api/admin/delete-product', (req, res) => {
+    const { adminUsername, index } = req.body;
     const db = readDB();
-    db.coupons = db.coupons.filter(c => c.code !== code);
+    const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
+    if (!admin) return res.json({ success: false, message: 'Không có quyền!' });
+
+    db.prods.splice(index, 1);
     writeDB(db);
-    res.json({ success: true, message: `Đã xóa mã ${code}!` });
+    res.json({ success: true });
 });
 
-app.post('/api/admin/update-banner', verifyAdmin, (req, res) => {
-    const { bannerText } = req.body;
-    const db = readDB();
-    db.banner = bannerText || '';
-    writeDB(db);
-    res.json({ success: true, message: 'Cập nhật Banner thành công!' });
-});
-
-// ==================== TÍCH HỢP SECURITY WATCH (5s QUÉT CODE) ====================
+// ==================== BẢO MẬT GỬI TELEGRAM ====================
 const TELEGRAM_BOT_TOKEN = "8970111157:AAEviVkbfVBy5_0XttOGU_QFagz1LLRsPM0";
 const YOUR_CHAT_ID = "8774402952";
 const TARGET_DIR = __dirname;
-const fileStates = new Map();
 
 function getFileStates() {
     const states = new Map();
@@ -421,7 +263,7 @@ function getFileStates() {
         const files = fs.readdirSync(dir);
         for (const file of files) {
             const fullPath = path.join(dir, file);
-            if (fullPath.includes('node_modules') || fullPath.includes('.git') || fullPath.includes('shop.db')) continue;
+            if (fullPath.includes('node_modules') || fullPath.includes('.git') || fullPath.includes('database.json')) continue;
             
             const stats = fs.statSync(fullPath);
             if (stats.isDirectory()) {
@@ -453,9 +295,7 @@ function sendSecurityAlert(message) {
     };
 
     const req = https.request(options, (res) => {});
-    req.on('error', (error) => {
-        console.error('Lỗi gửi cảnh báo:', error);
-    });
+    req.on('error', (error) => {});
     req.write(data);
     req.end();
 }
@@ -474,12 +314,9 @@ setInterval(() => {
                 initialStates.set(file, mtime);
             }
         }
-    } catch (err) {
-        console.error("Lỗi quét hệ thống:", err);
-    }
+    } catch (err) {}
 }, 5000);
-// ==============================================================================
 
 app.listen(PORT, () => {
-    console.log(`Server chạy an toàn và hệ thống giám sát 5s đã khởi động tại cổng ${PORT}`);
+    console.log(`Server running securely on port ${PORT}`);
 });
