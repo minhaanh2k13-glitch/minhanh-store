@@ -3,52 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MinhAnh Store - Cửa Hàng Số & Dòng Tiền</title>
+    <title>MinhAnh Store - Cửa Hàng Số Cao Cấp</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: #0f172a; color: #f8fafc; padding: 20px; min-height: 100vh; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 700px; }
-        .banner { background: #1e293b; border: 1px dashed #38bdf8; padding: 12px; border-radius: 8px; text-align: center; color: #38bdf8; font-size: 14px; margin-bottom: 20px; font-weight: 500; }
         
-        .nav-tabs { display: flex; gap: 6px; margin-bottom: 20px; background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid #334155; overflow-x: auto; }
-        .tab-btn { flex: 1; padding: 10px 8px; background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-align: center; }
-        .tab-btn.active { background: #0284c7; color: white; }
+        /* Hiệu ứng chuyển động mượt mà cho Banner */
+        .banner { 
+            background: linear-gradient(135deg, #1e293b, #0f172a); 
+            border: 1px dashed #38bdf8; 
+            padding: 14px; 
+            border-radius: 10px; 
+            text-align: center; 
+            color: #38bdf8; 
+            font-size: 14px; 
+            margin-bottom: 20px; 
+            font-weight: 500; 
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+            animation: pulseGlow 3s infinite alternate;
+        }
 
-        .card { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        @keyframes pulseGlow {
+            0% { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.1); }
+            100% { border-color: #f59e0b; box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
+        }
+
+        .nav-tabs { display: flex; gap: 6px; margin-bottom: 20px; background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid #334155; overflow-x: auto; }
+        .tab-btn { flex: 1; padding: 10px 8px; background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 12px; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; text-align: center; }
+        .tab-btn:hover { color: #f8fafc; background: rgba(56, 189, 248, 0.1); }
+        .tab-btn.active { background: #0284c7; color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4); }
+
+        .card { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: 0.3s; }
         .header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        .logo-text {
+            background: linear-gradient(90deg, #38bdf8, #818cf8, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-size: 13px; color: #94a3b8; }
-        input, select { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px; }
-        input:focus { border-color: #38bdf8; outline: none; }
-        button { padding: 10px 16px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #0ea5e9; }
+        input, select { width: 100%; padding: 11px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: white; font-size: 14px; transition: 0.2s; }
+        input:focus { border-color: #38bdf8; outline: none; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
+        
+        button { padding: 11px 16px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        button:hover { background: #0ea5e9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); }
+        
         .btn-danger { background: #e11d48; }
-        .btn-danger:hover { background: #f43f5e; }
+        .btn-danger:hover { background: #f43f5e; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3); }
+        
         .btn-success { background: #10b981; }
-        .btn-success:hover { background: #059669; }
+        .btn-success:hover { background: #059669; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        
         .btn-warning { background: #f59e0b; color: white; }
-        .btn-warning:hover { background: #d97706; }
+        .btn-warning:hover { background: #d97706; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+
         .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .item-box { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .item-box { background: #0f172a; border: 1px solid #334155; padding: 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: 0.2s; }
+        .item-box:hover { border-color: #475569; transform: translateX(2px); }
+        
         .hidden { display: none; }
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; background: #334155; color: #38bdf8; }
-        .vip-box { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #334155; color: #38bdf8; }
+        
+        .vip-box { 
+            background: linear-gradient(135deg, #0f172a, #1e293b); 
+            border: 1px solid #475569; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-bottom: 15px; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- Banner động -->
     <div class="banner" id="main-banner">Đang tải thông báo...</div>
 
     <div class="header-title">
-        <h3 style="color: #38bdf8;">⚡ MinhAnh Store</h3>
-        <div>
-            <button id="logout-btn" onclick="logout()" class="btn-danger hidden" style="padding: 6px 12px; font-size: 13px;">Thoát</button>
-        </div>
+        <h3 class="logo-text">⚡ MinhAnh Store</h3>
     </div>
 
-    <!-- MENU TAB (ĐÃ THÊM TAB LỊCH SỬ DÒNG TIỀN) -->
+    <!-- MENU TAB -->
     <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchTab('shop')">🛒 Cửa Hàng</button>
         <button class="tab-btn" onclick="switchTab('profile')">👤 Tài Khoản</button>
@@ -89,6 +131,11 @@
             <p style="font-size: 14px; margin-bottom: 6px;">Cấp bậc hội viên: <b id="disp-rank" style="color: #f59e0b;">Đồng (Free)</b></p>
             <p style="font-size: 14px; margin-bottom: 15px;">Số dư: <b id="disp-balance" style="color: #4ade80;">0</b>đ</p>
 
+            <!-- Nút Đăng Xuất được tích hợp gọn gàng, đẹp mắt ngay trong tab Tài Khoản -->
+            <div style="margin-bottom: 20px;">
+                <button class="btn-danger" onclick="logout()" style="width: 100%;">🚪 Đăng Xuất Tài Khoản</button>
+            </div>
+
             <div class="vip-box" style="border-color: #10b981;">
                 <h4 style="color: #10b981; font-size: 14px; margin-bottom: 6px;">💳 Gửi Yêu Cầu Nạp Tiền</h4>
                 <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Nhập số tiền bạn muốn nạp:</p>
@@ -102,7 +149,7 @@
             <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Trạng thái: <b id="fa-status" style="color: #f43f5e;">Đang tắt</b></p>
             <button id="btn-setup-2fa" onclick="setup2FA()">Bật 2FA</button>
             <div id="qr-box" class="hidden" style="margin-top: 15px; text-align: center;">
-                <img id="qr-img" src="" alt="QR" style="background: white; padding: 5px; border-radius: 6px; max-width: 150px;">
+                <img id="qr-img" src="" alt="QR" style="background: white; padding: 5px; border-radius: 8px; max-width: 150px;">
                 <div class="form-group" style="margin-top: 10px;"><input type="text" id="verifyOtp" placeholder="Nhập mã 6 số..."></div>
                 <button class="btn-success" onclick="verify2FA()">Xác Nhận</button>
             </div>
@@ -246,7 +293,6 @@
         const data = await res.json();
         if (data.success) {
             currentUser = data.user;
-            document.getElementById('logout-btn').classList.remove('hidden');
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('user-info-section').classList.remove('hidden');
             document.getElementById('vip-notice').classList.remove('hidden');
@@ -271,12 +317,11 @@
                 document.getElementById('tab-admin-btn').classList.remove('hidden');
             }
 
-            // Hiển thị lịch sử dòng tiền (nạp tiền) của user
             const depList = document.getElementById('user-deposit-history');
             if (currentUser.deposits && currentUser.deposits.length > 0) {
                 depList.innerHTML = '';
                 currentUser.deposits.forEach(d => {
-                    let statusColor = '#38bdf8'; // Chờ duyệt
+                    let statusColor = '#38bdf8';
                     if (d.status === 'Đã duyệt') statusColor = '#4ade80';
                     if (d.status === 'Đã hủy') statusColor = '#f43f5e';
 
@@ -294,7 +339,6 @@
                 depList.innerHTML = '<p style="color: #94a3b8;">Chưa có lịch sử nạp tiền nào.</p>';
             }
 
-            // Hiển thị lịch sử mua hàng
             const histList = document.getElementById('history-list');
             if (currentUser.history && currentUser.history.length > 0) {
                 histList.innerHTML = '';
@@ -430,8 +474,8 @@
                                 <div style="font-size: 11px; color: #94a3b8;">Thời gian: ${d.time}</div>
                             </div>
                             <div>
-                                <button class="btn-success" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;" onclick="approveDeposit('${d.id}')">Duyệt</button>
-                                <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="rejectDeposit('${d.id}')">Hủy</button>
+                                <button class="btn-success" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="approveDeposit('${d.id}')">Duyệt</button>
+                                <button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="rejectDeposit('${d.id}')">Hủy</button>
                             </div>
                         </div>
                     `;
@@ -446,7 +490,7 @@
                 uList.innerHTML += `
                     <div class="item-box">
                         <div><b>@${u.username}</b> - Số dư: <span style="color:#4ade80">${u.balance.toLocaleString()}đ</span> (Nạp: ${u.totalDeposited.toLocaleString()}đ)</div>
-                        ${u.username !== 'admin' ? `<button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="banUser('${u.username}')">Ban Nick</button>` : ''}
+                        ${u.username !== 'admin' ? `<button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="banUser('${u.username}')">Ban Nick</button>` : ''}
                     </div>
                 `;
             });
@@ -460,8 +504,8 @@
                             <b>${p.name}</b> - <span style="color:#4ade80">${p.price.toLocaleString()}đ</span>
                         </div>
                         <div>
-                            <button class="btn-warning" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;" onclick="editProduct('${p.id}', '${p.name}', ${p.price})">Sửa</button>
-                            <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteProduct('${p.id}')">Xóa</button>
+                            <button class="btn-warning" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="editProduct('${p.id}', '${p.name}', ${p.price})">Sửa</button>
+                            <button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteProduct('${p.id}')">Xóa</button>
                         </div>
                     </div>
                 `;
@@ -473,7 +517,7 @@
                 cList.innerHTML += `
                     <div class="item-box">
                         <div>Mã: <b style="color: #38bdf8">${c.code}</b> (Giảm ${c.discountPercent}%)</div>
-                        <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteCoupon('${c.code}')">Xóa</button>
+                        <button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteCoupon('${c.code}')">Xóa</button>
                     </div>
                 `;
             });
