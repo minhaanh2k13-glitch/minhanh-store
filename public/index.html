@@ -286,6 +286,9 @@
             <textarea id="admin-prod-stock" class="modal-input" placeholder="Danh sách tài khoản (mỗi dòng 1 acc)" style="height:60px;"></textarea>
             <button class="btn-action" style="background:var(--success-color); color:#000; margin-top:4px;" onclick="addNewProduct()">Đăng bán sản phẩm</button>
             <div id="admin-product-manage-list" style="margin-top:10px;"></div>
+
+            <h4 style="font-size:12px; margin:14px 0 4px 0; color:var(--accent-color);">5. Nhật ký cảnh báo an ninh hệ thống</h4>
+            <div id="admin-system-logs" style="max-height:120px; overflow-y:auto; background:rgba(0,0,0,0.4); padding:8px; border-radius:8px; font-size:11px;"></div>
         </div>
     </div>
 </div>
@@ -354,28 +357,30 @@
 </div>
 
 <script>
+// Bảo mật tối đa: Chặn F12, chuột phải, devtools và tự động chuyển hướng về Google khi cố tình soi code
 (function(){
-    document.addEventListener("contextmenu", e => e.preventDefault());
+    document.addEventListener("contextmenu", e => {
+        e.preventDefault();
+        window.location.href = "https://google.com";
+    });
     document.addEventListener("keydown", function(e){
         const k = e.key.toLowerCase();
-        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(k)) || (e.ctrlKey && k === "u")) {
+        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(k)) || (e.ctrlKey && ["u","s"].includes(k))) {
             e.preventDefault();
-            localStorage.removeItem("pro_curr");
-            location.reload();
+            window.location.href = "https://google.com";
             return false;
         }
     });
     setInterval(() => {
         if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-            localStorage.removeItem("pro_curr");
-            location.reload();
+            window.location.href = "https://google.com";
         }
     }, 1000);
 })();
 
 let current = JSON.parse(localStorage.getItem("pro_curr") || "null");
 let cart = JSON.parse(localStorage.getItem("pro_cart") || "[]");
-let savedBanner = localStorage.getItem("pro_banner") || '👻 HALLOWEEN FLASH SALE: Nhập mã giảm giá đặc biệt! 🦇';
+let savedBanner = localStorage.getItem("pro_banner") || '👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng đơn hàng ma quái! 🦇';
 document.getElementById("display-marquee-text").innerText = savedBanner;
 
 if (current) initApp(current);
@@ -566,7 +571,7 @@ async function adminDirectTopup() {
     let res = await (await fetch('/api/admin/edit-balance', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({adminUsername: current.username, targetUsername: username, amount, type: 'add'})
+        body: JSON.stringify({adminUsername: current.username, targetUsername: username, amount})
     })).json();
 
     if (res.success) {
@@ -702,20 +707,49 @@ function removeFromCart(idx) {
     updateCartUI();
 }
 
+// THANH TOÁN CHÍNH THỨC: Gọi API trừ tiền thật và trả tài khoản kho
 async function checkoutCart() {
     if (cart.length === 0) { alert("Giỏ hàng trống!"); return; }
-    alert("Thanh toán thành công qua hệ thống bảo mật!");
-    cart = [];
-    localStorage.removeItem("pro_cart");
-    updateCartUI();
-    closeModal('cart-modal');
-    renderShop();
+
+    let purchasedAccounts = [];
+    let successCount = 0;
+
+    for (let item of cart) {
+        let res = await (await fetch('/api/buy', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                username: current.username,
+                productId: item.id
+            })
+        })).json();
+
+        if (res.success) {
+            successCount++;
+            purchasedAccounts.push(`🎁 ${item.name}:\n➡️ ${res.account}`);
+            current.balance = res.newBalance;
+        } else {
+            alert(`Lỗi khi mua sản phẩm ${item.name}: ${res.message}`);
+            break;
+        }
+    }
+
+    if (successCount > 0) {
+        localStorage.setItem("pro_curr", JSON.stringify(current));
+        cart = [];
+        localStorage.removeItem("pro_cart");
+        updateCartUI();
+        closeModal('cart-modal');
+        initApp(current);
+        renderShop();
+        alert("Thanh toán thành công qua hệ thống bảo mật!\n\nThông tin tài khoản / Key của bạn:\n\n" + purchasedAccounts.join("\n\n"));
+    }
 }
 
 async function renderHistory() {
     let history = await fetchAPI("history");
     let myHist = history.filter(x => x.username === current.username);
-    document.getElementById("my-history-list").innerHTML = myHist.map(h => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${h.time}] Mua ${h.name}</div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử</p>";
+    document.getElementById("my-history-list").innerHTML = myHist.map(h => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${h.time}] Mua ${h.productName} - Acc: <b>${h.account}</b></div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử mua hàng</p>";
 
     let txs = await fetchAPI("txs");
     let myTxs = txs.filter(x => x.username === current.username);
@@ -753,6 +787,11 @@ async function renderAdminLists() {
             <button class="btn-action" style="padding:3px 8px; background:var(--danger-color); color:#fff;" onclick="deleteProduct(${idx})">Xóa</button>
         </div>
     `).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có sản phẩm.</p>";
+
+    let logs = await fetchAPI("logs");
+    document.getElementById("admin-system-logs").innerHTML = logs.map(l => `
+        <div style="border-bottom:1px dashed rgba(255,255,255,0.1); padding:4px 0; color:var(--accent-color);">[${l.time}] ${l.message}</div>
+    `).join('') || "<p style='color:var(--text-sub);'>Chưa có cảnh báo an ninh nào.</p>";
 }
 
 async function approveDeposit(index) {
