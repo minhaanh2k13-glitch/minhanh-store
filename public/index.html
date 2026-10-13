@@ -333,11 +333,12 @@
     </div>
 </div>
 
-<!-- MODAL GIỎ HÀNG -->
+<!-- MODAL GIỎ HÀNG & MÃ GIẢM GIÁ -->
 <div id="cart-modal" class="modal">
     <div class="modal-content">
         <h3 style="margin-top:0; font-family:'Creepster', cursive; color:var(--accent-color);">Giỏ hàng</h3>
         <div id="cart-items-list" style="max-height:150px; overflow-y:auto; margin-bottom:8px;"></div>
+        <input type="text" id="cart-coupon-input" placeholder="Nhập mã giảm giá (VD: MINHANH2K)" class="modal-input" style="font-size:11px;">
         <div id="vip-discount-notice" style="font-size:11px; color:var(--success-color); margin-bottom:6px; font-weight:bold;"></div>
         <div style="font-size:13px; font-weight:bold; margin-bottom:10px;">Tổng thanh toán: <span id="cart-total-price" style="color:var(--success-color);">0đ</span></div>
         <div style="display:flex; justify-content:flex-end; gap:6px;">
@@ -707,10 +708,11 @@ function removeFromCart(idx) {
     updateCartUI();
 }
 
-// THANH TOÁN CHÍNH THỨC: Gọi API trừ tiền thật và trả tài khoản kho
+// THANH TOÁN CHÍNH THỨC: Gửi kèm mã giảm giá lên server để xử lý trừ tiền và trả tài khoản
 async function checkoutCart() {
     if (cart.length === 0) { alert("Giỏ hàng trống!"); return; }
-
+    let couponCode = document.getElementById("cart-coupon-input") ? document.getElementById("cart-coupon-input").value.trim() : "";
+    
     let purchasedAccounts = [];
     let successCount = 0;
 
@@ -720,7 +722,8 @@ async function checkoutCart() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 username: current.username,
-                productId: item.id
+                productId: item.id,
+                couponCode: couponCode
             })
         })).json();
 
@@ -753,7 +756,12 @@ async function renderHistory() {
 
     let txs = await fetchAPI("txs");
     let myTxs = txs.filter(x => x.username === current.username);
-    document.getElementById("my-tx-list").innerHTML = myTxs.map(t => `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${t.time}] ${t.desc}: <b style="color:var(--success-color);">+${t.amount.toLocaleString()}đ</b></div>`).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử dòng tiền</p>";
+    document.getElementById("my-tx-list").innerHTML = myTxs.map(t => {
+        let isMinus = t.amount < 0;
+        let colorStyle = isMinus ? "color:var(--danger-color);" : "color:var(--success-color);";
+        let prefix = isMinus ? "" : "+";
+        return `<div style="font-size:11px; border-bottom:1px dashed var(--border-color); padding:6px 0;">[${t.time}] ${t.desc}: <b style="${colorStyle}">${prefix}${t.amount.toLocaleString()}đ</b></div>`;
+    }).join('') || "<p style='font-size:11px; color:var(--text-sub);'>Chưa có lịch sử dòng tiền</p>";
 }
 
 async function submitDeposit() {
