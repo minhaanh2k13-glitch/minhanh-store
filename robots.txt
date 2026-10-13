@@ -1,4 +1,3 @@
-[robots (2).txt](https://github.com/user-attachments/files/33387447/robots.2.txt)
 User-agent: *
 Disallow: /admin/
 Disallow: /wp-admin/
