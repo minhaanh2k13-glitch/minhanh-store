@@ -9,7 +9,6 @@ const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'minhanh_store_super_secret_key_2026';
 
 app.use(express.json());
 app.use(cookieParser());
@@ -63,14 +62,13 @@ function writeDB(data) {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-// API CƠ SỞ DỮ LIỆU CHUNG
+// API CƠ SỞ DỮ LIỆU
 app.get('/api/db/:key', (req, res) => {
     const db = readDB();
     const key = req.params.key;
     res.json({ success: true, data: db[key] || [] });
 });
 
-// API ĐĂNG NHẬP
 app.post('/api/login', async (req, res) => {
     const { username, password, otpToken } = req.body;
     const db = readDB();
@@ -89,7 +87,6 @@ app.post('/api/login', async (req, res) => {
     res.json({ success: true, user: { username: user.username, role: user.role, balance: user.balance, vip: user.vip || 'free', twoFactorEnabled: user.twoFactorEnabled } });
 });
 
-// API CÀI ĐẶT & XÁC THỰC 2FA
 app.post('/api/2fa/setup', async (req, res) => {
     const { username } = req.body;
     const db = readDB();
@@ -122,7 +119,7 @@ app.post('/api/2fa/verify', (req, res) => {
     res.json({ success: false, message: 'Mã OTP không chính xác!' });
 });
 
-// API MUA HÀNG & THANH TOÁN (Trừ tiền, lấy tài khoản kho, ghi lịch sử)
+// API MUA HÀNG & THANH TOÁN (Trừ tiền, lấy kho, ghi lịch sử dòng tiền trừ)
 app.post('/api/buy', (req, res) => {
     const { username, productId, couponCode } = req.body;
     const db = readDB();
@@ -154,6 +151,7 @@ app.post('/api/buy', (req, res) => {
         return res.json({ success: false, message: 'Số dư tài khoản không đủ để thanh toán giao dịch này!' });
     }
 
+    // Trừ tiền số dư thực tế
     user.balance -= finalPrice;
     let grantedAccount = stockLines.shift(); 
     prod.stock = stockLines.join('\n');
@@ -167,8 +165,16 @@ app.post('/api/buy', (req, res) => {
         time: orderTime
     });
 
+    // Ghi nhận biến động dòng tiền trừ
+    db.txs.push({
+        username: user.username,
+        desc: `Thanh toán mua ${prod.name}`,
+        amount: -finalPrice,
+        time: orderTime
+    });
+
     writeDB(db);
-    res.json({ success: true, account: grantedAccount, newBalance: user.balance, message: 'Thanh toán thành công qua hệ thống bảo mật!' });
+    res.json({ success: true, account: grantedAccount, newBalance: user.balance, message: 'Thanh toán thành công!' });
 });
 
 app.post('/api/deposit/submit', (req, res) => {
@@ -196,11 +202,12 @@ app.post('/api/admin/edit-balance', (req, res) => {
     const target = db.accs.find(x => x.username === targetUsername);
     if (!target) return res.json({ success: false, message: 'Tài khoản đích không tồn tại!' });
 
-    target.balance = (target.balance || 0) + Number(amount);
+    const amt = Number(amount);
+    target.balance = (target.balance || 0) + amt;
     db.txs.push({
         username: targetUsername,
         desc: 'Admin nạp tiền trực tiếp',
-        amount: Number(amount),
+        amount: amt,
         time: new Date().toLocaleString()
     });
     writeDB(db);
@@ -212,7 +219,7 @@ app.post('/api/admin/delete-user', (req, res) => {
     const db = readDB();
     const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
     if (!admin) return res.json({ success: false, message: 'Không có quyền!' });
-    if (targetUsername === 'admin') return res.json({ success: false, message: 'Không thể xóa tài khoản Root Admin!' });
+    if (targetUsername === 'admin') return res.json({ success: false, message: 'Không thể ban tài khoản Root Admin!' });
 
     db.accs = db.accs.filter(x => x.username !== targetUsername);
     writeDB(db);
@@ -239,6 +246,7 @@ app.post('/api/admin/create-user', (req, res) => {
     res.json({ success: true });
 });
 
+// Duyệt nạp tiền: Cập nhật trực tiếp vào số dư của user và ghi lịch sử cộng tiền
 app.post('/api/admin/approve-deposit', (req, res) => {
     const { adminUsername, index } = req.body;
     const db = readDB();
@@ -302,7 +310,7 @@ app.post('/api/admin/delete-product', (req, res) => {
     res.json({ success: true });
 });
 
-// ==================== HỆ THỐNG GIÁM SÁT FILE & GHI LOG AN NINH ====================
+// ==================== GIÁM SÁT FILE & GHI LOG AN NINH ====================
 const TARGET_DIR = __dirname;
 
 function getFileStates() {
@@ -335,10 +343,7 @@ function logSecurityAlert(message) {
         });
         if (db.logs.length > 50) db.logs = db.logs.slice(0, 50);
         writeDB(db);
-        console.log(`[CẢNH BÁO AN NINH]: ${message}`);
-    } catch (err) {
-        console.error("Lỗi ghi log:", err);
-    }
+    } catch (err) {}
 }
 
 const initialStates = getFileStates();
@@ -355,9 +360,7 @@ setInterval(() => {
                 initialStates.set(file, mtime);
             }
         }
-    } catch (err) {
-        console.log("Lỗi quét file:", err);
-    }
+    } catch (err) {}
 }, 5000);
 
 app.listen(PORT, () => {
