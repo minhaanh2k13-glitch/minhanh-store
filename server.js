@@ -62,7 +62,6 @@ function writeDB(data) {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-// API CƠ SỞ DỮ LIỆU
 app.get('/api/db/:key', (req, res) => {
     const db = readDB();
     const key = req.params.key;
@@ -119,7 +118,7 @@ app.post('/api/2fa/verify', (req, res) => {
     res.json({ success: false, message: 'Mã OTP không chính xác!' });
 });
 
-// API MUA HÀNG & THANH TOÁN (Trừ tiền, lấy kho, ghi lịch sử dòng tiền trừ)
+// API MUA HÀNG & THANH TOÁN
 app.post('/api/buy', (req, res) => {
     const { username, productId, couponCode } = req.body;
     const db = readDB();
@@ -151,7 +150,6 @@ app.post('/api/buy', (req, res) => {
         return res.json({ success: false, message: 'Số dư tài khoản không đủ để thanh toán giao dịch này!' });
     }
 
-    // Trừ tiền số dư thực tế
     user.balance -= finalPrice;
     let grantedAccount = stockLines.shift(); 
     prod.stock = stockLines.join('\n');
@@ -165,7 +163,6 @@ app.post('/api/buy', (req, res) => {
         time: orderTime
     });
 
-    // Ghi nhận biến động dòng tiền trừ
     db.txs.push({
         username: user.username,
         desc: `Thanh toán mua ${prod.name}`,
@@ -204,14 +201,16 @@ app.post('/api/admin/edit-balance', (req, res) => {
 
     const amt = Number(amount);
     target.balance = (target.balance || 0) + amt;
+    
     db.txs.push({
         username: targetUsername,
         desc: 'Admin nạp tiền trực tiếp',
         amount: amt,
         time: new Date().toLocaleString()
     });
+    
     writeDB(db);
-    res.json({ success: true });
+    res.json({ success: true, newBalance: target.balance });
 });
 
 app.post('/api/admin/delete-user', (req, res) => {
@@ -246,7 +245,6 @@ app.post('/api/admin/create-user', (req, res) => {
     res.json({ success: true });
 });
 
-// Duyệt nạp tiền: Cập nhật trực tiếp vào số dư của user và ghi lịch sử cộng tiền
 app.post('/api/admin/approve-deposit', (req, res) => {
     const { adminUsername, index } = req.body;
     const db = readDB();
@@ -258,11 +256,11 @@ app.post('/api/admin/approve-deposit', (req, res) => {
 
     let user = db.accs.find(x => x.username === dep.username);
     if (user) {
-        user.balance = (user.balance || 0) + dep.amount;
+        user.balance = (user.balance || 0) + Number(dep.amount);
         db.txs.push({
             username: dep.username,
             desc: 'Nạp tiền qua QR (Đã duyệt)',
-            amount: dep.amount,
+            amount: Number(dep.amount),
             time: new Date().toLocaleString()
         });
     }
@@ -310,9 +308,8 @@ app.post('/api/admin/delete-product', (req, res) => {
     res.json({ success: true });
 });
 
-// ==================== GIÁM SÁT FILE & GHI LOG AN NINH ====================
+// GIÁM SÁT FILE & GHI LOG
 const TARGET_DIR = __dirname;
-
 function getFileStates() {
     const states = new Map();
     function walk(dir) {
@@ -320,13 +317,8 @@ function getFileStates() {
         for (const file of files) {
             const fullPath = path.join(dir, file);
             if (fullPath.includes('node_modules') || fullPath.includes('.git') || fullPath.includes('database.json')) continue;
-            
             const stats = fs.statSync(fullPath);
-            if (stats.isDirectory()) {
-                walk(fullPath);
-            } else {
-                states.set(fullPath, stats.mtimeMs);
-            }
+            if (stats.isDirectory()) { walk(fullPath); } else { states.set(fullPath, stats.mtimeMs); }
         }
     }
     walk(TARGET_DIR);
@@ -337,17 +329,13 @@ function logSecurityAlert(message) {
     try {
         const db = readDB();
         if (!db.logs) db.logs = [];
-        db.logs.unshift({
-            message: message,
-            time: new Date().toLocaleString()
-        });
+        db.logs.unshift({ message: message, time: new Date().toLocaleString() });
         if (db.logs.length > 50) db.logs = db.logs.slice(0, 50);
         writeDB(db);
     } catch (err) {}
 }
 
 const initialStates = getFileStates();
-
 setInterval(() => {
     try {
         const currentStates = getFileStates();
