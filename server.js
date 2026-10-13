@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
-const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -49,10 +48,10 @@ function readDB() {
     if (!data.logs) data.logs = [];
     if (!data.prods) data.prods = [];
     if (!data.accs) data.accs = [];
-    if (!data.coupons) data.coupons = [];
+    if (!data.coupons) data.coupons = [{ code: 'MINHANH2K', rate: 10, expiry: '2030-12-31T23:59' }];
+    if (!data.banner) data.banner = '👻 HALLOWEEN FLASH SALE: Nhập mã "MINHANH2K" giảm ngay 10% tổng đơn hàng ma quái! 🦇';
     if (!data.pending_deposits) data.pending_deposits = [];
     if (!data.txs) data.txs = [];
-    if (!data.banner) data.banner = 'Chào mừng đến với Anh Store!';
     if (!data.history) data.history = [];
     return data;
 }
@@ -64,13 +63,14 @@ function writeDB(data) {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-// API CƠ SỞ DỮ LIỆU
+// API CƠ SỞ DỮ LIỆU CHUNG
 app.get('/api/db/:key', (req, res) => {
     const db = readDB();
     const key = req.params.key;
     res.json({ success: true, data: db[key] || [] });
 });
 
+// API ĐĂNG NHẬP
 app.post('/api/login', async (req, res) => {
     const { username, password, otpToken } = req.body;
     const db = readDB();
@@ -89,6 +89,7 @@ app.post('/api/login', async (req, res) => {
     res.json({ success: true, user: { username: user.username, role: user.role, balance: user.balance, vip: user.vip || 'free', twoFactorEnabled: user.twoFactorEnabled } });
 });
 
+// API CÀI ĐẶT & XÁC THỰC 2FA
 app.post('/api/2fa/setup', async (req, res) => {
     const { username } = req.body;
     const db = readDB();
@@ -121,6 +122,55 @@ app.post('/api/2fa/verify', (req, res) => {
     res.json({ success: false, message: 'Mã OTP không chính xác!' });
 });
 
+// API MUA HÀNG & THANH TOÁN (Trừ tiền, lấy tài khoản kho, ghi lịch sử)
+app.post('/api/buy', (req, res) => {
+    const { username, productId, couponCode } = req.body;
+    const db = readDB();
+    const user = db.accs.find(x => x.username === username);
+    const prod = db.prods.find(x => x.id === productId);
+
+    if (!user) return res.json({ success: false, message: 'Vui lòng đăng nhập lại tài khoản!' });
+    if (!prod) return res.json({ success: false, message: 'Sản phẩm không tồn tại!' });
+
+    let stockLines = prod.stock ? prod.stock.split('\n').filter(line => line.trim() !== '') : [];
+    if (stockLines.length === 0) {
+        return res.json({ success: false, message: 'Sản phẩm này đã tạm hết hàng trong kho!' });
+    }
+
+    let finalPrice = prod.price;
+    if (user.vip === 'gold') finalPrice = finalPrice * 0.8;
+    else if (user.vip === 'silver') finalPrice = finalPrice * 0.9;
+
+    if (couponCode) {
+        let coupon = db.coupons.find(c => c.code === couponCode);
+        if (coupon) {
+            finalPrice = finalPrice * (1 - coupon.rate / 100);
+        }
+    }
+
+    finalPrice = Math.round(finalPrice);
+
+    if ((user.balance || 0) < finalPrice) {
+        return res.json({ success: false, message: 'Số dư tài khoản không đủ để thanh toán giao dịch này!' });
+    }
+
+    user.balance -= finalPrice;
+    let grantedAccount = stockLines.shift(); 
+    prod.stock = stockLines.join('\n');
+
+    const orderTime = new Date().toLocaleString();
+    db.history.unshift({
+        username: user.username,
+        productName: prod.name,
+        price: finalPrice,
+        account: grantedAccount,
+        time: orderTime
+    });
+
+    writeDB(db);
+    res.json({ success: true, account: grantedAccount, newBalance: user.balance, message: 'Thanh toán thành công qua hệ thống bảo mật!' });
+});
+
 app.post('/api/deposit/submit', (req, res) => {
     const { username, amount } = req.body;
     const amt = Number(amount);
@@ -138,7 +188,7 @@ app.post('/api/deposit/submit', (req, res) => {
 
 // ==================== QUẢN TRỊ ADMIN ====================
 app.post('/api/admin/edit-balance', (req, res) => {
-    const { adminUsername, targetUsername, amount, type } = req.body;
+    const { adminUsername, targetUsername, amount } = req.body;
     const db = readDB();
     const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
     if (!admin) return res.json({ success: false, message: 'Không có quyền quản trị!' });
@@ -162,7 +212,7 @@ app.post('/api/admin/delete-user', (req, res) => {
     const db = readDB();
     const admin = db.accs.find(x => x.username === adminUsername && x.role === 'admin');
     if (!admin) return res.json({ success: false, message: 'Không có quyền!' });
-    if (targetUsername === 'admin') return res.json({ success: false, message: 'Không thể ban tài khoản Root Admin!' });
+    if (targetUsername === 'admin') return res.json({ success: false, message: 'Không thể xóa tài khoản Root Admin!' });
 
     db.accs = db.accs.filter(x => x.username !== targetUsername);
     writeDB(db);
@@ -252,9 +302,7 @@ app.post('/api/admin/delete-product', (req, res) => {
     res.json({ success: true });
 });
 
-// ==================== BẢO MẬT GỬI TELEGRAM ====================
-const TELEGRAM_BOT_TOKEN = "8970111157:AAG4BQvnCwF-LuzLEqFt_-znNANR_sx07Ao";
-const YOUR_CHAT_ID = "8774402952";
+// ==================== HỆ THỐNG GIÁM SÁT FILE & GHI LOG AN NINH ====================
 const TARGET_DIR = __dirname;
 
 function getFileStates() {
@@ -277,27 +325,20 @@ function getFileStates() {
     return states;
 }
 
-function sendSecurityAlert(message) {
-    const data = JSON.stringify({
-        chat_id: YOUR_CHAT_ID,
-        text: `🚨 CẢNH BÁO AN NINH HỆ THỐNG!\n\n${message}`
-    });
-
-    const options = {
-        hostname: 'api.telegram.org',
-        port: 443,
-        path: `/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': data.length
-        }
-    };
-
-    const req = https.request(options, (res) => {});
-    req.on('error', (error) => {});
-    req.write(data);
-    req.end();
+function logSecurityAlert(message) {
+    try {
+        const db = readDB();
+        if (!db.logs) db.logs = [];
+        db.logs.unshift({
+            message: message,
+            time: new Date().toLocaleString()
+        });
+        if (db.logs.length > 50) db.logs = db.logs.slice(0, 50);
+        writeDB(db);
+        console.log(`[CẢNH BÁO AN NINH]: ${message}`);
+    } catch (err) {
+        console.error("Lỗi ghi log:", err);
+    }
 }
 
 const initialStates = getFileStates();
@@ -307,14 +348,16 @@ setInterval(() => {
         const currentStates = getFileStates();
         for (let [file, mtime] of currentStates.entries()) {
             if (!initialStates.has(file)) {
-                sendSecurityAlert(`📁 Phát hiện file mới được tạo / tải lên:\n${file}`);
+                logSecurityAlert(`Phát hiện file mới được tạo / tải lên: ${file}`);
                 initialStates.set(file, mtime);
             } else if (initialStates.get(file) !== mtime) {
-                sendSecurityAlert(`⚠️ Phát hiện file mã nguồn vừa bị chỉnh sửa:\n${file}`);
+                logSecurityAlert(`Phát hiện file mã nguồn vừa bị chỉnh sửa: ${file}`);
                 initialStates.set(file, mtime);
             }
         }
-    } catch (err) {}
+    } catch (err) {
+        console.log("Lỗi quét file:", err);
+    }
 }, 5000);
 
 app.listen(PORT, () => {
